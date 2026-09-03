@@ -41,36 +41,29 @@ interface Contestant {
 // ── Constants ────────────────────────────────────────────────────────────
 const CATEGORIES = [
   "Announcing",
-  "News Reporting",
-  "Program Presenting",
+  "Announcing (Tamil)",
   "Sports Commentary",
   "Dubbing",
   "Cartoon Drawing",
   "Photography",
-  "Videography",
   "Graphic Designing",
   "Technical",
   "Short Film",
-  "AI Short Film",
 ];
 
 const LANGUAGES_BY_CATEGORY: Record<string, string[]> = {
-  "Announcing": ["Sinhala", "English", "Tamil"],
-  "News Reporting": ["Sinhala", "English", "Tamil"],
-  "Program Presenting": ["Sinhala", "English", "Tamil"],
-  "Sports Commentary": ["Sinhala", "English", "Tamil"],
-  "Dubbing": ["Sinhala", "English", "Tamil"],
+  "Announcing": ["Sinhala", "English"],
+  "Announcing (Tamil)": ["Tamil"],
+  "Sports Commentary": ["Sinhala", "English"],
+  "Dubbing": ["Sinhala", "English"],
+  "Cartoon Drawing": ["Sinhala", "English"],
+  "Graphic Designing": ["Sinhala", "English"],
   "Technical": ["Sinhala", "English"],
-  "Short Film": ["Sinhala", "English", "Tamil"],
-  "AI Short Film": ["Sinhala", "English", "Tamil"],
+  "Short Film": ["Sinhala", "English"],
 };
 
 const AGE_CATEGORIES_BY_CATEGORY: Record<string, string[]> = {
   "Announcing": ["Junior", "Intermediate", "Senior"],
-  "News Reporting": ["Junior", "Intermediate", "Senior"],
-  "Program Presenting": ["Junior", "Senior"],
-  "Sports Commentary": ["Junior", "Senior"],
-  "Dubbing": ["Junior", "Senior"],
 };
 
 // ── Add Contestant Dialog ────────────────────────────────────────────────
@@ -134,7 +127,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger 
         render={
-          <Button className="bg-green-500 hover:bg-green-400 text-black font-bold tracking-wide shadow-md shadow-green-500/25 transition-all hover:scale-105">
+          <Button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold tracking-wide shadow-md shadow-yellow-500/25 transition-all hover:scale-105">
             <Plus size={16} className="mr-2" /> Add Contestant
           </Button>
         }
@@ -151,7 +144,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
               onChange={(e) => setForm({ ...form, full_name: e.target.value })}
               placeholder="Contestant full name"
               required
-              className="bg-black/40 border-border focus:border-green-500/60 h-11"
+              className="bg-black/40 border-border focus:border-yellow-500/60 h-11"
             />
           </div>
 
@@ -162,7 +155,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
               value={form.date_of_birth}
               onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
               required
-              className="bg-black/40 border-border focus:border-green-500/60 h-11"
+              className="bg-black/40 border-border focus:border-yellow-500/60 h-11"
             />
           </div>
 
@@ -173,7 +166,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value, language: "", age_category: "" })}
                 required
-                className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-green-500/60 focus:outline-none appearance-none cursor-pointer"
+                className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer"
               >
                 <option value="" disabled>Select category</option>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -190,7 +183,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
                   value={form.language}
                   onChange={(e) => setForm({ ...form, language: e.target.value })}
                   required
-                  className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-green-500/60 focus:outline-none appearance-none cursor-pointer"
+                  className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Select language</option>
                   {availableLanguages.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -208,7 +201,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
                   value={form.age_category}
                   onChange={(e) => setForm({ ...form, age_category: e.target.value })}
                   required
-                  className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-green-500/60 focus:outline-none appearance-none cursor-pointer"
+                  className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Select age category</option>
                   {availableAges.map((a) => <option key={a} value={a}>{a}</option>)}
@@ -221,7 +214,7 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-green-500 hover:bg-green-400 text-black font-black tracking-wide mt-2 transition-all"
+            className="w-full h-11 bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-wide mt-2 transition-all"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -314,9 +307,17 @@ export default function DashboardPage() {
   return (
     <div className="relative min-h-screen pt-24 pb-16 px-4 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="orb" style={{ width: "min(500px,80vw)", height: "min(500px,80vw)", top: "-10%", right: "-10%", background: "radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 65%)" }} />
-        <div className="orb" style={{ width: "min(400px,70vw)", height: "min(400px,70vw)", bottom: "5%", left: "-10%", background: "radial-gradient(circle, rgba(234,179,8,0.1) 0%, transparent 65%)" }} />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute inset-0 opacity-40 mix-blend-screen"
+          style={{
+            backgroundImage: 'url("/images/bg-smoke.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto">
@@ -328,7 +329,7 @@ export default function DashboardPage() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
         >
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-green-400 mb-1">Coordinator Dashboard</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">Coordinator Dashboard</p>
             <h1 className="text-2xl font-black text-foreground">{school ? school.name : <Skeleton className="h-8 w-64 bg-black/40" />}</h1>
             {school ? (
               <p className="text-muted-foreground text-sm mt-0.5">{school.coordinator}</p>
@@ -336,11 +337,10 @@ export default function DashboardPage() {
               <Skeleton className="h-4 w-40 mt-2 bg-black/40" />
             )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
+          <Button 
+            variant="outline" 
+            className="border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
             onClick={handleSignOut}
-            className="border-border text-muted-foreground hover:text-red-400 hover:border-red-400/40 hover:bg-red-500/5 transition-all w-fit"
           >
             <LogOut size={14} className="mr-2" /> Sign Out
           </Button>
@@ -349,9 +349,9 @@ export default function DashboardPage() {
         {/* Stats cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {[
-            { icon: <Users size={22} />, label: "Total Contestants", value: contestants.length, color: "green" },
+            { icon: <Users size={22} />, label: "Total Contestants", value: contestants.length, color: "emerald" },
             { icon: <Trophy size={22} />, label: "Categories Entered", value: categoryCount, color: "yellow" },
-            { icon: <Trophy size={22} />, label: "Registration Status", value: "Active", color: "green", isText: true },
+            { icon: <Trophy size={22} />, label: "Registration Status", value: "Active", color: "emerald", isText: true },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -360,13 +360,13 @@ export default function DashboardPage() {
               transition={{ duration: 0.5, delay: i * 0.08 }}
               className={`glass-card rounded-xl p-5 flex items-start gap-4 ${i === 2 ? "col-span-2 lg:col-span-1" : ""}`}
             >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${stat.color === "green" ? "bg-green-500/15 text-green-400 border border-green-500/25" : "bg-yellow-500/15 text-yellow-400 border border-yellow-500/25"}`}>
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${stat.color === "emerald" ? "bg-emerald-900/40 text-emerald-400 border border-emerald-500/25" : "bg-yellow-500/15 text-yellow-400 border border-yellow-500/25"}`}>
                 {stat.icon}
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">{stat.label}</p>
-                <p className={`text-2xl font-black ${stat.color === "green" ? "gradient-text-green" : "gradient-text-gold"}`}>
-                  {stat.isText ? <span className="text-base font-bold text-green-400">{stat.value}</span> : stat.value}
+                <p className={`text-2xl font-black ${stat.color === "emerald" ? "text-emerald-400" : "text-yellow-400"}`}>
+                  {stat.isText ? <span className="text-base font-bold text-emerald-400">{stat.value}</span> : stat.value}
                 </p>
               </div>
             </motion.div>
@@ -399,7 +399,7 @@ export default function DashboardPage() {
               <div className="text-5xl mb-4">🎬</div>
               <p className="font-bold text-foreground mb-2">No contestants yet</p>
               <p className="text-muted-foreground text-sm mb-6">Start adding your school&apos;s contestants for Ninnadaya &apos;26</p>
-              <AddContestantDialog onAdd={handleAdd} />
+              <AddContestantDialog schoolId={school!.id} onAdd={handleAdd} />
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className="text-xs border-green-500/30 text-green-400 bg-green-500/10 font-medium"
+                          className="text-xs border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-medium"
                         >
                           {c.category}
                         </Badge>

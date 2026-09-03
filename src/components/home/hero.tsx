@@ -43,42 +43,19 @@ export function HeroSection() {
       {/* Content */}
       <div className="relative z-30 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-24 pb-16">
         
-        {/* Top Text */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-white font-medium tracking-[0.15em] sm:tracking-[0.2em] uppercase text-xs sm:text-sm mb-8 drop-shadow-md"
-        >
-          Media Unit of Maliyadeva Balika Vidyalaya<br className="sm:hidden" /> Proudly Presents
-        </motion.p>
-
-        {/* Logo Placeholder Space */}
+        {/* Official Logo Image */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="relative mx-auto w-full max-w-3xl h-[200px] sm:h-[300px] md:h-[380px] flex items-center justify-center border-2 border-dashed border-yellow-500/30 bg-black/20 backdrop-blur-sm rounded-3xl mb-8"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+          className="relative w-full max-w-[450px] mx-auto mb-10"
         >
-          <div className="text-center">
-            <span className="block text-4xl mb-3">🖼️</span>
-            <p className="text-yellow-400 font-bold tracking-widest uppercase">Logo Space</p>
-            <p className="text-muted-foreground text-xs mt-2 max-w-xs mx-auto px-4">
-              The "Ninnadaya '26" transparent logo image will be placed here
-            </p>
-          </div>
+          <img 
+            src="/images/main-logo.jpg" 
+            alt="Ninnadaya '26 - Media Unit of Maliyadeva Balika Vidyalaya Proudly Presents" 
+            className="w-full h-auto drop-shadow-2xl rounded-2xl"
+          />
         </motion.div>
-
-        {/* Bottom Text */}
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.25 }}
-          className="font-bold tracking-widest uppercase gradient-text-gold mb-10 drop-shadow-lg"
-          style={{ fontSize: "clamp(0.9rem, 2vw, 1.4rem)", lineHeight: 1.5 }}
-        >
-          All Island Inter School<br />Trilingual Media Competition
-        </motion.h2>
 
         {/* CTA Buttons */}
         <motion.div
@@ -88,21 +65,21 @@ export function HeroSection() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
           <Link href="/register">
-            <Button
-              size="lg"
-              className="bg-green-500 hover:bg-green-400 text-black font-bold tracking-wide px-8 shadow-lg shadow-green-500/30 hover:shadow-green-400/40 transition-all duration-300 hover:scale-105"
+            <Button 
+              size="lg" 
+              className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold tracking-wide px-8 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-400/40 transition-all duration-300 hover:scale-105"
             >
-              Register Your School
-              <ArrowRight size={18} className="ml-2" />
+              Register School
+              <ArrowRight className="ml-2" size={18} />
             </Button>
           </Link>
           <Link href="/competition">
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-border hover:border-green-500/50 text-foreground hover:text-green-400 hover:bg-green-500/5 tracking-wide px-8 transition-all duration-300"
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-emerald-800/60 bg-emerald-900/10 hover:border-emerald-700/80 text-foreground hover:text-yellow-400 hover:bg-emerald-900/30 tracking-wide px-8 transition-all duration-300"
             >
-              View Competition
+              Explore Competition
             </Button>
           </Link>
         </motion.div>
@@ -115,7 +92,7 @@ export function HeroSection() {
           className="grid grid-cols-3 gap-4 mt-16 max-w-md mx-auto"
         >
           {[
-            { icon: <Trophy size={18} />, value: "12", label: "Categories" },
+            { icon: <Trophy size={18} />, value: "9", label: "Categories" },
             { icon: <Users size={18} />, value: "3", label: "Languages" },
             { icon: <Star size={18} />, value: "#1", label: "Competition" },
           ].map((stat) => (

@@ -53,7 +53,7 @@ function StatCard({ value, label, suffix = "" }: { value: number; label: string;
       className="glass-card rounded-2xl flex flex-col items-center justify-center p-8 gap-2"
       style={{ width: "clamp(140px, 35vw, 220px)", height: "clamp(140px, 35vw, 220px)" }}
     >
-      <span className="gradient-text-brand font-black text-glow-green" style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
+      <span className="gradient-text-gold font-black text-glow-gold" style={{ fontSize: "clamp(2.5rem, 7vw, 4rem)" }}>
         {count}{suffix}
       </span>
       <span className="text-muted-foreground text-sm text-center tracking-wide">{label}</span>
@@ -63,18 +63,15 @@ function StatCard({ value, label, suffix = "" }: { value: number; label: string;
 
 // ── Categories ─────────────────────────────────────────────────────────────
 const categories = [
-  { icon: <Mic size={24} />, name: "Announcing", langs: "Sin · Eng · Tam", ages: "Junior · Intermediate · Senior" },
-  { icon: <Newspaper size={24} />, name: "News Reporting", langs: "Sin · Eng · Tam", ages: "Junior · Intermediate · Senior" },
-  { icon: <Tv size={24} />, name: "Program Presenting", langs: "Sin · Eng · Tam", ages: "Junior · Senior" },
-  { icon: <Activity size={24} />, name: "Sports Commentary", langs: "Sin · Eng · Tam", ages: "Junior · Senior" },
-  { icon: <Voicemail size={24} />, name: "Dubbing", langs: "Sin · Eng · Tam", ages: "Varies by language" },
-  { icon: <Pencil size={24} />, name: "Cartoon Drawing", langs: "N/A", ages: "Open" },
+  { icon: <Mic size={24} />, name: "Announcing", langs: "Sin · Eng", ages: "Junior · Intermediate · Senior" },
+  { icon: <Mic size={24} />, name: "Announcing (Tamil)", langs: "Tamil", ages: "Open" },
+  { icon: <Activity size={24} />, name: "Sports Commentary", langs: "Sin · Eng", ages: "Open" },
+  { icon: <Voicemail size={24} />, name: "Dubbing", langs: "Sin · Eng", ages: "Open" },
+  { icon: <Pencil size={24} />, name: "Cartoon Drawing", langs: "Sin · Eng", ages: "Open" },
   { icon: <Camera size={24} />, name: "Photography", langs: "N/A", ages: "Open" },
-  { icon: <Video size={24} />, name: "Videography", langs: "N/A", ages: "Open" },
-  { icon: <Palette size={24} />, name: "Graphic Designing", langs: "N/A", ages: "Open" },
+  { icon: <Palette size={24} />, name: "Graphic Designing", langs: "Sin · Eng", ages: "Open" },
   { icon: <Cpu size={24} />, name: "Technical", langs: "Sin · Eng", ages: "Open" },
-  { icon: <Film size={24} />, name: "Short Film", langs: "Sin · Eng · Tam", ages: "Open" },
-  { icon: <Bot size={24} />, name: "AI Short Film", langs: "Sin · Eng · Tam", ages: "Open" },
+  { icon: <Film size={24} />, name: "Short Film", langs: "Sin · Eng", ages: "Open" },
 ];
 
 function CategoryCard({ icon, name, langs, ages, index }: { icon: React.ReactNode; name: string; langs: string; ages: string; index: number }) {
@@ -85,13 +82,13 @@ function CategoryCard({ icon, name, langs, ages, index }: { icon: React.ReactNod
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: (index % 4) * 0.08 }}
       whileHover={{ y: -5, scale: 1.02 }}
-      className="glass-card rounded-2xl p-5 flex flex-col gap-3 group cursor-default transition-all duration-300 hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10"
+      className="glass-card rounded-2xl p-5 flex flex-col gap-3 group cursor-default transition-all duration-300 hover:border-yellow-500/40 hover:shadow-lg hover:shadow-yellow-500/10"
     >
-      <div className="w-11 h-11 rounded-xl bg-green-500/15 border border-green-500/20 flex items-center justify-center text-green-400 group-hover:bg-green-500/25 group-hover:border-green-500/50 transition-all duration-300">
+      <div className="w-11 h-11 rounded-xl bg-emerald-900/40 border border-emerald-800/50 flex items-center justify-center text-yellow-400 group-hover:bg-yellow-500/20 group-hover:border-yellow-500/50 transition-all duration-300">
         {icon}
       </div>
       <div>
-        <h3 className="font-bold text-foreground text-sm mb-1 group-hover:text-green-400 transition-colors">{name}</h3>
+        <h3 className="font-bold text-foreground text-sm mb-1 group-hover:text-yellow-400 transition-colors">{name}</h3>
         <p className="text-muted-foreground text-xs">{langs}</p>
         <p className="text-muted-foreground/70 text-xs mt-0.5">{ages}</p>
       </div>
@@ -133,7 +130,7 @@ export default function CompetitionPage() {
     <div className="relative overflow-hidden bg-[#020603]">
       {/* Background Image */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div 
+        <div
           className="absolute inset-0 opacity-40 mix-blend-screen"
           style={{
             backgroundImage: 'url("/images/bg-smoke.jpg")',
@@ -142,7 +139,7 @@ export default function CompetitionPage() {
             backgroundRepeat: 'no-repeat'
           }}
         />
-        <div className="absolute inset-0 bg-black/70 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
       </div>
 
       {/* ── HERO ── */}
@@ -153,9 +150,14 @@ export default function CompetitionPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 text-xs font-semibold tracking-widest uppercase mb-6"
+            className="flex items-center justify-center gap-2 mb-6"
           >
-            ✦ Ninnadaya &apos;26 ✦
+            <span className="text-3xl font-black tracking-widest uppercase gradient-text-gold">
+              Ninnadaya
+            </span>
+            <span className="text-sm text-muted-foreground font-medium tracking-wide mt-1">
+              &apos;26
+            </span>
           </motion.div>
 
           <motion.h1
@@ -165,9 +167,7 @@ export default function CompetitionPage() {
             className="font-black tracking-tight mb-6"
             style={{ fontSize: "clamp(2.5rem, 10vw, 7rem)", lineHeight: 1.05 }}
           >
-            <span className="gradient-text-brand text-glow-green">THE</span>
-            <br />
-            <span className="text-foreground">COMPETITION</span>
+            {/* Removed THE COMPETITION text as requested */}
           </motion.h1>
 
           <motion.p
@@ -177,7 +177,7 @@ export default function CompetitionPage() {
             className="text-muted-foreground max-w-2xl mx-auto mb-10"
             style={{ fontSize: "clamp(0.95rem, 2.5vw, 1.15rem)", lineHeight: 1.8 }}
           >
-            The most prestigious all-island school media competition in Sri Lanka — 12 categories, 3 languages,
+            The most prestigious all-island school media competition in Sri Lanka — 9 categories, 3 languages,
             judged by Sri Lanka&apos;s finest media personalities.
           </motion.p>
 
@@ -190,13 +190,13 @@ export default function CompetitionPage() {
             <Link href="/register">
               <Button
                 size="lg"
-                className="bg-green-500 hover:bg-green-400 text-black font-bold tracking-wide px-8 shadow-lg shadow-green-500/30 hover:shadow-green-400/40 transition-all duration-300 hover:scale-105"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold tracking-wide px-8 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-400/40 transition-all duration-300 hover:scale-105"
               >
                 Register Now <ArrowRight size={18} className="ml-2" />
               </Button>
             </Link>
             <a href="#categories">
-              <Button size="lg" variant="outline" className="border-border hover:border-green-500/50 hover:text-green-400 hover:bg-green-500/5 tracking-wide px-8 transition-all">
+              <Button size="lg" variant="outline" className="border-border hover:border-emerald-800/60 hover:text-yellow-400 hover:bg-emerald-900/30 tracking-wide px-8 transition-all">
                 View Categories <ChevronDown size={18} className="ml-2" />
               </Button>
             </a>
@@ -224,7 +224,7 @@ export default function CompetitionPage() {
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
             <StatCard value={50} label="Schools Registered" suffix="+" />
             <StatCard value={500} label="Contestants" suffix="+" />
-            <StatCard value={12} label="Categories" />
+            <StatCard value={9} label="Categories" />
             <StatCard value={3} label="Languages" />
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function CompetitionPage() {
       <section id="categories" className="section-pad relative">
         <div
           className="orb absolute"
-          style={{ width: "min(600px,80vw)", height: "min(600px,80vw)", top: "20%", left: "-15%", background: "radial-gradient(circle, rgba(34,197,94,0.07) 0%, transparent 65%)" }}
+          style={{ width: "min(600px,80vw)", height: "min(600px,80vw)", top: "20%", left: "-15%", background: "radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 65%)" }}
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -244,17 +244,17 @@ export default function CompetitionPage() {
             transition={{ duration: 0.7 }}
             className="text-center mb-14"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-semibold tracking-widest uppercase mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-800/50 bg-emerald-900/40 text-yellow-400 text-xs font-semibold tracking-widest uppercase mb-4">
               Contestant Categories
             </div>
             <h2
               className="font-black text-foreground mb-4"
               style={{ fontSize: "clamp(1.8rem, 5vw, 3rem)" }}
             >
-              12 Ways to <span className="gradient-text-brand">Shine</span>
+              9 Ways to <span className="gradient-text-gold">Shine</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-              From announcing to AI filmmaking — compete in the category that matches your passion
+              From announcing to short films — compete in the category that matches your passion
             </p>
           </motion.div>
 
@@ -274,7 +274,7 @@ export default function CompetitionPage() {
             <Link href="/register">
               <Button
                 size="lg"
-                className="bg-green-500 hover:bg-green-400 text-black font-bold tracking-wide px-8 shadow-lg shadow-green-500/30 hover:shadow-green-400/40 transition-all duration-300 hover:scale-105"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold tracking-wide px-8 shadow-lg shadow-yellow-500/30 hover:shadow-yellow-400/40 transition-all duration-300 hover:scale-105"
               >
                 Register Contestants <ArrowRight size={18} className="ml-2" />
               </Button>
@@ -319,7 +319,7 @@ export default function CompetitionPage() {
                   value={`faq-${i}`}
                   className="glass-card rounded-xl border-0 px-5 overflow-hidden"
                 >
-                  <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-green-400 hover:no-underline py-4 transition-colors">
+                  <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-yellow-400 hover:no-underline py-4 transition-colors">
                     {faq.q}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground text-sm leading-relaxed pb-4">
@@ -335,8 +335,8 @@ export default function CompetitionPage() {
       {/* ── CTA BANNER ── */}
       <section className="section-pad relative overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 via-transparent to-yellow-500/10" />
-          <div className="orb absolute inset-0 m-auto" style={{ width: "min(600px,90vw)", height: "min(600px,90vw)", background: "radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 60%)" }} />
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/20 via-transparent to-yellow-500/10" />
+          <div className="orb absolute inset-0 m-auto" style={{ width: "min(600px,90vw)", height: "min(600px,90vw)", background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 60%)" }} />
         </div>
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
@@ -345,7 +345,7 @@ export default function CompetitionPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="font-black mb-4 gradient-text-brand" style={{ fontSize: "clamp(2rem, 6vw, 4rem)" }}>
+            <h2 className="font-black mb-4 gradient-text-gold" style={{ fontSize: "clamp(2rem, 6vw, 4rem)" }}>
               Ready to Compete?
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
@@ -354,7 +354,7 @@ export default function CompetitionPage() {
             <Link href="/register">
               <Button
                 size="lg"
-                className="bg-green-500 hover:bg-green-400 text-black font-black tracking-widest uppercase px-12 py-6 text-base shadow-xl shadow-green-500/40 hover:shadow-green-400/50 transition-all duration-300 hover:scale-105"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-widest uppercase px-12 py-6 text-base shadow-xl shadow-yellow-500/40 hover:shadow-yellow-400/50 transition-all duration-300 hover:scale-105"
               >
                 Register Your School
                 <ArrowRight size={20} className="ml-3" />

@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace("/dashboard");
+      }
+    };
+    checkUser();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +55,7 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-[#020603]">
       {/* Background Image */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="fixed inset-0 pointer-events-none z-0">
         <div 
           className="absolute inset-0 opacity-40 mix-blend-screen"
           style={{
@@ -54,12 +65,12 @@ export default function LoginPage() {
             backgroundRepeat: 'no-repeat'
           }}
         />
-        <div className="absolute inset-0 bg-black/70 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
         {/* Back link */}
-        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-green-400 transition-colors text-sm mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-yellow-400 transition-colors text-sm mb-8">
           <ArrowLeft size={16} /> Back to Home
         </Link>
 
@@ -70,9 +81,9 @@ export default function LoginPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <span className="text-3xl font-black tracking-widest uppercase gradient-text-brand">Ninnadaya</span>
+          <span className="text-3xl font-black tracking-widest uppercase gradient-text-gold">Ninnadaya</span>
           <p className="text-muted-foreground text-sm mt-2">Coordinator Portal</p>
-          <div className="mt-4 w-16 h-px mx-auto bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-60" />
+          <div className="mt-4 w-16 h-px mx-auto bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-60" />
         </motion.div>
 
         {/* Login card */}
@@ -94,14 +105,14 @@ export default function LoginPage() {
                 type="email"
                 placeholder="coordinator@school.lk"
                 required
-                className="bg-black/40 border-border focus:border-green-500/60 h-12"
+                className="bg-black/40 border-border focus:border-yellow-500/60 h-12"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="loginPassword" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
-                <button type="button" className="text-xs text-green-400 hover:text-green-300 transition-colors">
+                <button type="button" className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors">
                   Forgot password?
                 </button>
               </div>
@@ -111,7 +122,7 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   required
-                  className="bg-black/40 border-border focus:border-green-500/60 h-12 pr-12"
+                  className="bg-black/40 border-border focus:border-yellow-500/60 h-12 pr-12"
                 />
                 <button
                   type="button"
@@ -135,7 +146,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-green-500 hover:bg-green-400 text-black font-black tracking-widest uppercase shadow-lg shadow-green-500/30 hover:shadow-green-400/40 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:scale-100"
+              className="w-full h-12 bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-widest uppercase shadow-lg shadow-yellow-500/30 hover:shadow-yellow-400/40 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:scale-100"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -154,7 +165,7 @@ export default function LoginPage() {
           className="text-center mt-6 text-muted-foreground text-sm"
         >
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-green-400 hover:text-green-300 font-semibold transition-colors">
+          <Link href="/register" className="text-yellow-400 hover:text-yellow-300 font-semibold transition-colors">
             Register your school →
           </Link>
         </motion.p>

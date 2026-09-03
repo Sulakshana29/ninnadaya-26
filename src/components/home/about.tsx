@@ -46,11 +46,11 @@ function FeatureCard({
       whileHover={{ y: -4 }}
       className="glass-card rounded-2xl p-6 flex flex-col gap-4 group cursor-default"
     >
-      <div className="w-12 h-12 rounded-xl bg-green-500/15 border border-green-500/25 flex items-center justify-center text-green-400 group-hover:bg-green-500/25 group-hover:border-green-500/50 transition-all duration-300">
+      <div className="w-12 h-12 rounded-xl bg-emerald-900/40 border border-emerald-800/50 flex items-center justify-center text-yellow-400 group-hover:bg-yellow-500/20 group-hover:border-yellow-500/50 transition-all duration-300">
         {icon}
       </div>
       <div>
-        <h3 className="font-bold text-foreground mb-2 group-hover:text-green-400 transition-colors duration-300">
+        <h3 className="font-bold text-foreground mb-2 group-hover:text-yellow-400 transition-colors duration-300">
           {title}
         </h3>
         <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
@@ -92,12 +92,12 @@ export function AboutSection() {
             style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", lineHeight: 1.15 }}
           >
             Discover. Create.{" "}
-            <span className="gradient-text-brand">Shine.</span>
+            <span className="gradient-text-gold">Shine.</span>
           </h2>
           <div className="space-y-4">
             <p className="text-muted-foreground leading-relaxed" style={{ fontSize: "clamp(1rem, 2vw, 1.125rem)" }}>
               <span className="text-foreground font-semibold">NINNADAYA &apos;26</span> is an annual inter-school media competition organized by the{" "}
-              <span className="text-green-400 font-semibold">Media Unit of Maliyadeva Balika Vidyalaya</span>. The project provides a platform to discover and nurture the hidden talents of young students and develop their creative, communicative, technical and artistic skills.
+              <span className="text-yellow-400 font-semibold">Media Unit of Maliyadeva Balika Vidyalaya</span>. The project provides a platform to discover and nurture the hidden talents of young students and develop their creative, communicative, technical and artistic skills.
             </p>
             <p className="text-muted-foreground leading-relaxed" style={{ fontSize: "clamp(1rem, 2vw, 1.125rem)" }}>
               With a variety of challenging activities related to media, NINNADAYA &apos;26 brings out the creative minds among the students, enabling them to showcase their talents and turn their ideas into reality. The project motivates young minds to venture into the world of media, build self-confidence and become the{" "}

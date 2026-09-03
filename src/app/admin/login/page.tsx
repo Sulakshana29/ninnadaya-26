@@ -45,7 +45,19 @@ export default function AdminLoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-[#020603]">
-      <SmokyBackground darknessLevel="heavy" />
+      {/* Background Image */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute inset-0 opacity-40 mix-blend-screen"
+          style={{
+            backgroundImage: 'url("/images/bg-smoke.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
+      </div>
 
       <div className="relative z-10 w-full max-w-md">
         <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-green-400 transition-colors text-sm mb-8">

@@ -2,6 +2,15 @@ import Link from "next/link";
 
 const socialLinks = [
   {
+    label: "Facebook",
+    href: "#",
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+    ),
+  },
+  {
     label: "Instagram",
     href: "https://www.instagram.com/maliyadevabalika_mediaunit?utm_source=qr&igsi=MWlpaDJuMWRibXdtZA==",
     icon: (
@@ -32,20 +41,18 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-border bg-card/50 backdrop-blur-sm">
+    <footer className="relative border-t border-white/5 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col items-center gap-6">
-          {/* Brand */}
-          <div className="text-center">
-            <span className="text-2xl font-black tracking-widest uppercase gradient-text-brand">
-              Ninnadaya
-            </span>
-            <p className="text-muted-foreground text-sm mt-1 tracking-wide">
-              Maliyadeva Balika Vidyalaya, Kurunegala
-            </p>
-            <p className="text-xs text-muted-foreground/60 mt-1 italic">
-              ආලෝකෝ උදපාදී — &ldquo;Light Arose&rdquo;
-            </p>
+          <div className="max-w-md">
+            <Link href="/" className="flex items-center gap-2 mb-4 group">
+              <span className="text-2xl font-black tracking-widest uppercase gradient-text-gold">
+                Ninnadaya
+              </span>
+              <span className="text-sm text-muted-foreground font-medium tracking-wide mt-1">
+                &apos;26
+              </span>
+            </Link>
           </div>
 
           {/* Social links */}
@@ -57,7 +64,7 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground border border-border hover:border-green-500/50 hover:text-green-400 hover:bg-green-500/10 transition-all duration-200"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground border border-border hover:border-emerald-800/60 hover:text-yellow-400 hover:bg-emerald-900/30 transition-all duration-200"
               >
                 {s.icon}
               </a>
@@ -66,15 +73,15 @@ export function Footer() {
 
           {/* Quick links */}
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-green-400 transition-colors">Home</Link>
-            <Link href="/competition" className="hover:text-green-400 transition-colors">Competition</Link>
-            <Link href="/register" className="hover:text-green-400 transition-colors">Register</Link>
-            <Link href="/login" className="hover:text-green-400 transition-colors">Login</Link>
+            <Link href="/" className="hover:text-yellow-400 transition-colors">Home</Link>
+            <Link href="/competition" className="hover:text-yellow-400 transition-colors">Competition</Link>
+            <Link href="/register" className="hover:text-yellow-400 transition-colors">Register</Link>
+            <Link href="/login" className="hover:text-yellow-400 transition-colors">Login</Link>
           </div>
 
           {/* Copyright */}
-          <div className="text-center text-xs text-muted-foreground/50 border-t border-border w-full pt-6">
-            <p>&copy; {new Date().getFullYear()} Ninnadaya — Maliyadeva Balika Vidyalaya. All Rights Reserved.</p>
+          <div className="text-center text-xs font-medium text-foreground w-full pt-4">
+            <p>&copy; 2026 media unit of Maliyadeva Balika Vidyalaya, Kurunegala</p>
           </div>
         </div>
       </div>

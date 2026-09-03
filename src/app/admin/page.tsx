@@ -70,7 +70,19 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="relative min-h-screen pt-24 pb-16 px-4 overflow-hidden bg-[#020603]">
-      <SmokyBackground darknessLevel="heavy" />
+      {/* Background Image */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div 
+          className="absolute inset-0 opacity-40 mix-blend-screen"
+          style={{
+            backgroundImage: 'url("/images/bg-smoke.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Header */}

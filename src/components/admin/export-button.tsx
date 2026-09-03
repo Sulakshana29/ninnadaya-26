@@ -36,7 +36,7 @@ export function ExportButton({ data }: { data: any[] }) {
   return (
     <Button 
       onClick={handleExport}
-      className="bg-green-500 hover:bg-green-400 text-black font-bold tracking-wide shadow-md shadow-green-500/25 transition-all hover:scale-105"
+      className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold tracking-wide shadow-md shadow-yellow-500/25 transition-all hover:scale-105"
     >
       <Download size={16} className="mr-2" /> Export to CSV
     </Button>

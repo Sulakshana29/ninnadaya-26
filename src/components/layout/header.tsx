@@ -29,14 +29,14 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         isScrolled
-          ? "bg-[#020603]/95 backdrop-blur-md border-b border-green-500/20 shadow-lg shadow-black/40"
+          ? "bg-black/80 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/40"
           : "bg-transparent"
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="text-xl font-black tracking-widest uppercase gradient-text-brand">
+          <span className="text-xl font-black tracking-widest uppercase gradient-text-gold">
             Ninnadaya
           </span>
           <span className="hidden sm:block text-xs text-muted-foreground font-medium tracking-wide mt-0.5">
@@ -53,7 +53,7 @@ export function Header() {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                 pathname === link.href
-                  ? "text-green-400 bg-green-500/10"
+                  ? "text-yellow-400 font-bold"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5"
               )}
             >
@@ -62,9 +62,9 @@ export function Header() {
           ))}
           <Link href="/login">
             <Button
-              size="sm"
               variant="outline"
-              className="ml-3 border-green-500/40 text-green-400 hover:bg-green-500/10 hover:border-green-500/70 transition-all duration-200"
+              size="sm"
+              className="ml-3 border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/70 hover:text-yellow-300 transition-all duration-200"
             >
               Coordinator Login
             </Button>
@@ -96,9 +96,9 @@ export function Header() {
               href={link.href}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                "block px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                 pathname === link.href
-                  ? "text-green-400 bg-green-500/10"
+                  ? "text-yellow-400 font-bold bg-yellow-500/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/5"
               )}
             >
@@ -107,9 +107,9 @@ export function Header() {
           ))}
           <Link href="/login" onClick={() => setMobileOpen(false)}>
             <Button
-              size="sm"
               variant="outline"
-              className="mt-2 w-full border-green-500/40 text-green-400 hover:bg-green-500/10"
+              className="mt-2 w-full border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/70"
+              onClick={() => setMobileOpen(false)}
             >
               Coordinator Login
             </Button>
