@@ -6,9 +6,12 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/layout/user-avatar";
+import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
   { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
   { label: "Competition", href: "/competition" },
   { label: "Register", href: "/register" },
 ];
@@ -17,11 +20,23 @@ export function Header() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sessionUser, setSessionUser] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSessionUser(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSessionUser(!!session);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -46,7 +61,7 @@ export function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
+          {navLinks.filter(link => !sessionUser || link.href !== "/register").map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -60,15 +75,18 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Link href="/login">
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-3 border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/70 hover:text-yellow-300 transition-all duration-200"
-            >
-              Coordinator Login
-            </Button>
-          </Link>
+          {sessionUser && <UserAvatar />}
+          {!sessionUser && (
+            <Link href="/login">
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-1 border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/70 hover:text-yellow-300 transition-all duration-200"
+              >
+                Coordinator Login
+              </Button>
+            </Link>
+          )}
         </nav>
 
         {/* Mobile hamburger */}
@@ -90,7 +108,7 @@ export function Header() {
         )}
       >
         <nav className="px-4 py-4 flex flex-col gap-1">
-          {navLinks.map((link) => (
+          {navLinks.filter(link => !sessionUser || link.href !== "/register").map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -105,15 +123,17 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Link href="/login" onClick={() => setMobileOpen(false)}>
-            <Button
-              variant="outline"
-              className="mt-2 w-full border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/70"
-              onClick={() => setMobileOpen(false)}
-            >
-              Coordinator Login
-            </Button>
-          </Link>
+          {!sessionUser && (
+            <Link href="/login" onClick={() => setMobileOpen(false)}>
+              <Button
+                variant="outline"
+                className="mt-2 w-full border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/70"
+                onClick={() => setMobileOpen(false)}
+              >
+                Coordinator Login
+              </Button>
+            </Link>
+          )}
         </nav>
       </div>
     </header>

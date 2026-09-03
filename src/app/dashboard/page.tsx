@@ -321,44 +321,64 @@ export default function DashboardPage() {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Header row */}
+        {/* ── GATEWAY BANNER ── */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+          className="mb-8"
         >
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-1">Coordinator Dashboard</p>
-            <h1 className="text-2xl font-black text-foreground">{school ? school.name : <Skeleton className="h-8 w-64 bg-black/40" />}</h1>
-            {school ? (
-              <p className="text-muted-foreground text-sm mt-0.5">{school.coordinator}</p>
-            ) : (
-              <Skeleton className="h-4 w-40 mt-2 bg-black/40" />
-            )}
+          {/* Hero heading */}
+          <div className="glass-card rounded-2xl px-8 py-10 mb-4 border border-emerald-800/30 relative overflow-hidden">
+            {/* Subtle background orb */}
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(234,179,8,0.07) 0%, transparent 65%)" }} />
+            <div className="relative z-10">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-yellow-400/70 mb-2">Coordinator Dashboard</p>
+                <h1
+                  className="font-black gradient-text-gold"
+                  style={{ fontSize: "clamp(2rem, 6vw, 3.5rem)", lineHeight: 1.1 }}
+                >
+                  Ninnadaya Gateway
+                </h1>
+                <p className="text-muted-foreground text-sm mt-2">Contest management panel</p>
+              </div>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            className="border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
-            onClick={handleSignOut}
-          >
-            <LogOut size={14} className="mr-2" /> Sign Out
-          </Button>
+
+          {/* Info cards row */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: "School Registered", value: school?.name ?? "Loading…" },
+              { label: "Coordinator Name", value: school?.coordinator ?? "Loading…" },
+              { label: "Registration Status", value: "Active ✓" },
+            ].map((item, i) => (
+              <motion.div
+                key={item.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.15 + i * 0.07 }}
+                className="glass-card rounded-xl px-5 py-4 border border-border/40"
+              >
+                <p className="text-xs font-bold uppercase tracking-widest text-yellow-400/70 mb-1">{item.label}</p>
+                <p className="text-foreground font-semibold text-sm">{item.value}</p>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-8">
           {[
             { icon: <Users size={22} />, label: "Total Contestants", value: contestants.length, color: "emerald" },
             { icon: <Trophy size={22} />, label: "Categories Entered", value: categoryCount, color: "yellow" },
-            { icon: <Trophy size={22} />, label: "Registration Status", value: "Active", color: "emerald", isText: true },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: i * 0.08 }}
-              className={`glass-card rounded-xl p-5 flex items-start gap-4 ${i === 2 ? "col-span-2 lg:col-span-1" : ""}`}
+              className="glass-card rounded-xl p-5 flex items-start gap-4"
             >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${stat.color === "emerald" ? "bg-emerald-900/40 text-emerald-400 border border-emerald-500/25" : "bg-yellow-500/15 text-yellow-400 border border-yellow-500/25"}`}>
                 {stat.icon}
@@ -366,7 +386,7 @@ export default function DashboardPage() {
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">{stat.label}</p>
                 <p className={`text-2xl font-black ${stat.color === "emerald" ? "text-emerald-400" : "text-yellow-400"}`}>
-                  {stat.isText ? <span className="text-base font-bold text-emerald-400">{stat.value}</span> : stat.value}
+                  {stat.value}
                 </p>
               </div>
             </motion.div>

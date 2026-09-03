@@ -42,10 +42,10 @@ const socialLinks = [
 export function Footer() {
   return (
     <footer className="relative border-t border-white/5 bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col items-center gap-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col items-center gap-4">
           <div className="max-w-md">
-            <Link href="/" className="flex items-center gap-2 mb-4 group">
+            <Link href="/" className="flex items-center gap-2 group">
               <span className="text-2xl font-black tracking-widest uppercase gradient-text-gold">
                 Ninnadaya
               </span>
@@ -80,7 +80,7 @@ export function Footer() {
           </div>
 
           {/* Copyright */}
-          <div className="text-center text-xs font-medium text-foreground w-full pt-4">
+          <div className="text-center text-xs font-medium text-foreground w-full mt-2">
             <p>&copy; 2026 media unit of Maliyadeva Balika Vidyalaya, Kurunegala</p>
           </div>
         </div>
