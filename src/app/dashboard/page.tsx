@@ -100,7 +100,21 @@ const contestantSchema = z.object({
 
 type ContestantFormValues = z.infer<typeof contestantSchema>;
 
-function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c: Contestant) => void }) {
+const EVENT_LIMITS: Record<string, number> = {
+  "Announcing": 50,
+  "Announcing (Tamil)": 50,
+  "Sports Commentary": 50,
+  "Dubbing": 50,
+  "Cartoon Drawing": 50,
+  "Photography": 50,
+  "Graphic Designing": 40,
+  "Technical": 50,
+  "Short Film": 40,
+  "Special Event": 40,
+  "Editing": 35,
+};
+
+function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: string, onAdd: (c: Contestant) => void, contestants: Contestant[] }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -128,10 +142,44 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
   }, [selectedCategory]);
 
   const onSubmit = async (data: ContestantFormValues) => {
+    const ageCategoryToSave = needsAge && data.age_category ? data.age_category : "Open";
+    const languageToSave = needsLanguage && data.language ? data.language : null;
+
+    // --- CHECK 1: School Quota Limit (Sub-Category Level) ---
+    const sameSubCategoryCount = contestants.filter(c => 
+      c.category === data.category && 
+      (c.language === languageToSave || (!c.language && !languageToSave)) &&
+      c.age_category === ageCategoryToSave
+    ).length;
+
+    const limit = EVENT_LIMITS[data.category] || 50; // fallback to 50 if somehow undefined
+    if (sameSubCategoryCount >= limit) {
+      toast.error(`Limit reached: You can only add ${limit} contestants to this specific category combination.`);
+      return;
+    }
+
+    // --- CHECK 2: Individual Participation Limit ---
+    const samePersonEntries = contestants.filter(c => 
+      c.full_name.trim().toLowerCase() === data.full_name.trim().toLowerCase() && 
+      c.date_of_birth === data.date_of_birth
+    );
+
+    const hasRegularEvent = samePersonEntries.some(c => c.category !== "Special Event");
+    const hasSpecialEvent = samePersonEntries.some(c => c.category === "Special Event");
+    const isAddingSpecialEvent = data.category === "Special Event";
+
+    if (isAddingSpecialEvent && hasSpecialEvent) {
+      toast.error(`${data.full_name} is already registered in a Special Event.`);
+      return;
+    }
+    if (!isAddingSpecialEvent && hasRegularEvent) {
+      toast.error(`${data.full_name} is already registered in a regular event. They can only enter 1 regular event and 1 Special Event.`);
+      return;
+    }
+
+    // Passed all checks, proceed to save
     setLoading(true);
     const supabase = createClient();
-    
-    const ageCategoryToSave = needsAge && data.age_category ? data.age_category : "Open";
 
     const { data: dbData, error } = await supabase
       .from("contestants")
@@ -465,7 +513,7 @@ export default function DashboardPage() {
               <h2 className="font-black text-lg text-foreground">Contestants</h2>
               <p className="text-muted-foreground text-sm">Manage your school&apos;s competition entries</p>
             </div>
-            {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} />}
+            {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} contestants={contestants} />}
           </div>
 
           {/* Table */}
@@ -478,7 +526,7 @@ export default function DashboardPage() {
               <div className="text-5xl mb-4">🎬</div>
               <p className="font-bold text-foreground mb-2">No contestants yet</p>
               <p className="text-muted-foreground text-sm mb-6">Start adding your school&apos;s contestants for Ninnadaya &apos;26</p>
-              {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} />}
+              {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} contestants={contestants} />}
             </div>
           ) : (
             <div className="overflow-x-auto">
