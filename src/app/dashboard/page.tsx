@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Trophy, LogOut, Plus, ChevronDown } from "lucide-react";
+import { Users, Trophy, Plus, ChevronDown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -338,6 +338,23 @@ export default function DashboardPage() {
   };
   const handleAdd = (c: Contestant) => setContestants((prev) => [c, ...prev]);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this contestant? This action cannot be undone.")) return;
+    
+    setContestants(prev => prev.filter(c => c.id !== id));
+    
+    const supabase = createClient();
+    const { error } = await supabase.from("contestants").delete().eq("id", id);
+    
+    if (error) {
+      toast.error("Failed to delete contestant.");
+      // Rollback optimistic update
+      router.refresh();
+    } else {
+      toast.success("Contestant deleted successfully.");
+    }
+  };
+
   const categoryCount = new Set(contestants.map((c) => c.category)).size;
 
   return (
@@ -468,6 +485,7 @@ export default function DashboardPage() {
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Category</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider hidden md:table-cell">Language</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider hidden lg:table-cell">Age Group</TableHead>
+                    <TableHead className="text-right text-muted-foreground text-xs font-bold uppercase tracking-wider">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -494,6 +512,15 @@ export default function DashboardPage() {
                           {c.age_category}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-right">
+                        <button
+                          onClick={() => handleDelete(c.id)}
+                          className="p-2 rounded-lg text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                          aria-label="Delete contestant"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -509,7 +536,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.5 }}
           className="text-xs text-muted-foreground/50 text-center mt-6"
         >
-          ⚠️ Contestant entries cannot be deleted once added. Contact the Organizing Committee for any modifications.
+          Manage your school's entries carefully. Contact the Organizing Committee for major modifications.
         </motion.p>
       </div>
     </div>
