@@ -93,15 +93,12 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <ExportButton data={exportData} />
-            <Button
-              asChild
-              variant="outline"
-              className="border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-sm font-medium"
             >
-              <Link href="/">
-                <LogOut size={14} className="mr-2" /> Exit Admin
-              </Link>
-            </Button>
+              <LogOut size={14} /> Exit Admin
+            </Link>
           </div>
         </div>
 

@@ -44,7 +44,7 @@ export function Header() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         isScrolled
-          ? "bg-black/80 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/40"
+          ? "bg-black/80 backdrop-blur-md shadow-lg shadow-black/40"
           : "bg-transparent"
       )}
     >
@@ -103,8 +103,8 @@ export function Header() {
       {/* Mobile menu */}
       <div
         className={cn(
-          "md:hidden overflow-hidden transition-all duration-300 ease-in-out border-b border-border",
-          mobileOpen ? "max-h-64 bg-background/95 backdrop-blur-xl" : "max-h-0"
+          "md:hidden overflow-hidden transition-all duration-300 ease-in-out",
+          mobileOpen ? "max-h-64 bg-background/95 backdrop-blur-xl border-b border-border" : "max-h-0"
         )}
       >
         <nav className="px-4 py-4 flex flex-col gap-1">

@@ -312,7 +312,7 @@ export default function CompetitionPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            <Accordion type="single" collapsible="true" className="space-y-3">
+            <Accordion className="space-y-3">
               {faqs.map((faq, i) => (
                 <AccordionItem
                   key={i}
@@ -334,10 +334,7 @@ export default function CompetitionPage() {
 
       {/* ── CTA BANNER ── */}
       <section className="section-pad relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/20 via-transparent to-yellow-500/10" />
-          <div className="orb absolute inset-0 m-auto" style={{ width: "min(600px,90vw)", height: "min(600px,90vw)", background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 60%)" }} />
-        </div>
+        <div className="orb absolute inset-0 m-auto pointer-events-none" style={{ width: "min(600px,90vw)", height: "min(600px,90vw)", background: "radial-gradient(circle, rgba(16,185,129,0.10) 0%, transparent 60%)" }} />
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
