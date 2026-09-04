@@ -255,8 +255,9 @@ export default function DashboardPage() {
         .single();
 
       if (schoolError || !schoolData) {
-        toast.error("Could not load school data.");
-        setLoading(false);
+        toast.error("Registration incomplete. Missing school data. Please contact support.");
+        await supabase.auth.signOut();
+        router.push("/register");
         return;
       }
 
@@ -419,7 +420,7 @@ export default function DashboardPage() {
               <div className="text-5xl mb-4">🎬</div>
               <p className="font-bold text-foreground mb-2">No contestants yet</p>
               <p className="text-muted-foreground text-sm mb-6">Start adding your school&apos;s contestants for Ninnadaya &apos;26</p>
-              <AddContestantDialog schoolId={school!.id} onAdd={handleAdd} />
+              {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} />}
             </div>
           ) : (
             <div className="overflow-x-auto">

@@ -77,9 +77,9 @@ export default function RegisterPage() {
       return;
     }
 
-    // 2. Save school details to the schools table
+    // 2. Save school details via secure API route (bypasses RLS during signup)
     if (authData.user) {
-      const { error: dbError } = await supabase.from("schools").insert({
+      const payload = {
         user_id: authData.user.id,
         school_name: data.get("schoolName"),
         school_address: data.get("schoolAddress"),
@@ -89,12 +89,18 @@ export default function RegisterPage() {
         coordinator_email: email,
         coordinator_phone: data.get("coordinatorPhone"),
         requires_invitation: invitation === "Yes",
+      };
+
+      const res = await fetch("/api/register-school", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
-      if (dbError) {
-        // Auth account created but DB insert failed — notify but still show success
+      if (!res.ok) {
+        const errData = await res.json();
         toast.warning("Account created but school details could not be saved. Please contact support.");
-        console.error("DB insert error:", dbError);
+        console.error("DB insert error:", errData.error);
       }
     }
 

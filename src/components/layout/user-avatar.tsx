@@ -24,6 +24,12 @@ export function UserAvatar() {
       if (data) {
         setCoordinator(data.coordinator_name);
         setSchoolName(data.school_name);
+      } else {
+        // Ghost account detected (Auth exists but no school record)
+        // Force sign out so they aren't stuck without a logout button
+        await supabase.auth.signOut();
+        router.push("/register");
+        router.refresh();
       }
     });
   }, []);
@@ -46,9 +52,7 @@ export function UserAvatar() {
     router.refresh();
   };
 
-  if (!coordinator) return null;
-
-  const initial = coordinator.trim()[0]?.toUpperCase() ?? "?";
+  const initial = coordinator ? coordinator.trim()[0]?.toUpperCase() : "?";
 
   return (
     <div className="relative" ref={ref}>
