@@ -73,6 +73,7 @@ const categories = [
   { icon: <Cpu size={24} />, name: "Technical", langs: "Sin · Eng", ages: "Open" },
   { icon: <Film size={24} />, name: "Short Film", langs: "Sin · Eng", ages: "Open" },
   { icon: <Bot size={24} />, name: "Special Event", langs: "Sin · Eng", ages: "Open" },
+  { icon: <Video size={24} />, name: "Editing", langs: "Sin · Eng", ages: "Jun · Int · Sen" },
 ];
 
 function CategoryCard({ icon, name, langs, ages, index }: { icon: React.ReactNode; name: string; langs: string; ages: string; index: number }) {
@@ -252,7 +253,7 @@ export default function CompetitionPage() {
               className="font-black text-foreground mb-4"
               style={{ fontSize: "clamp(1.8rem, 5vw, 3rem)" }}
             >
-              10 Ways to <span className="gradient-text-gold">Shine</span>
+              11 Ways to <span className="gradient-text-gold">Shine</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto text-sm">
               From announcing to short films — compete in the category that matches your passion
