@@ -52,6 +52,7 @@ const CATEGORIES = [
   "Graphic Designing",
   "Technical",
   "Short Film",
+  "Special Event",
 ];
 
 const LANGUAGES_BY_CATEGORY: Record<string, string[]> = {
@@ -63,10 +64,12 @@ const LANGUAGES_BY_CATEGORY: Record<string, string[]> = {
   "Graphic Designing": ["Sinhala", "English"],
   "Technical": ["Sinhala", "English"],
   "Short Film": ["Sinhala", "English"],
+  "Special Event": ["Sinhala", "English"],
 };
 
 const AGE_CATEGORIES_BY_CATEGORY: Record<string, string[]> = {
   "Announcing": ["Junior", "Intermediate", "Senior"],
+  "Special Event": ["Open"],
 };
 
 // ── Add Contestant Dialog ────────────────────────────────────────────────
