@@ -26,7 +26,7 @@ const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   requiresInvitation: z.enum(["Yes", "No"], {
-    required_error: "Please select an option",
+    message: "Please select an option",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
