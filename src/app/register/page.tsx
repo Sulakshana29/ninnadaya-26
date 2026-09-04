@@ -1,26 +1,57 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const registerSchema = z.object({
+  schoolName: z.string().min(2, "School name must be at least 2 characters"),
+  schoolAddress: z.string().min(5, "Address is too short"),
+  ticName: z.string().min(2, "Teacher name must be at least 2 characters"),
+  ticPhone: z.string().regex(/^\+?[\d\s-]{9,15}$/, "Invalid phone number"),
+  coordinatorName: z.string().min(2, "Coordinator name must be at least 2 characters"),
+  coordinatorEmail: z.string().email("Invalid email address"),
+  coordinatorPhone: z.string().regex(/^\+?[\d\s-]{9,15}$/, "Invalid phone number"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+  requiresInvitation: z.enum(["Yes", "No"], {
+    required_error: "Please select an option",
+  }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [invitation, setInvitation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const invitation = watch("requiresInvitation");
 
   useEffect(() => {
     const checkUser = async () => {
@@ -33,47 +64,24 @@ export default function RegisterPage() {
     checkUser();
   }, [router]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterFormValues) => {
     setError(null);
-    const form = e.currentTarget;
-    const data = new FormData(form);
-
-    const password = data.get("password") as string;
-    const confirmPassword = data.get("confirmPassword") as string;
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match. Please try again.");
-      return;
-    }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (!invitation) {
-      setError("Please indicate whether you require an invitation letter.");
-      return;
-    }
-
-    setLoading(true);
     const supabase = createClient();
-    const email = data.get("coordinatorEmail") as string;
 
     // 1. Create the auth account
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
+      email: data.coordinatorEmail,
+      password: data.password,
       options: {
         data: {
-          school_name: data.get("schoolName"),
-          coordinator_name: data.get("coordinatorName"),
+          school_name: data.schoolName,
+          coordinator_name: data.coordinatorName,
         },
       },
     });
 
     if (signUpError) {
       setError(signUpError.message);
-      setLoading(false);
       return;
     }
 
@@ -81,14 +89,14 @@ export default function RegisterPage() {
     if (authData.user) {
       const payload = {
         user_id: authData.user.id,
-        school_name: data.get("schoolName"),
-        school_address: data.get("schoolAddress"),
-        teacher_name: data.get("ticName"),
-        teacher_phone: data.get("ticPhone"),
-        coordinator_name: data.get("coordinatorName"),
-        coordinator_email: email,
-        coordinator_phone: data.get("coordinatorPhone"),
-        requires_invitation: invitation === "Yes",
+        school_name: data.schoolName,
+        school_address: data.schoolAddress,
+        teacher_name: data.ticName,
+        teacher_phone: data.ticPhone,
+        coordinator_name: data.coordinatorName,
+        coordinator_email: data.coordinatorEmail,
+        coordinator_phone: data.coordinatorPhone,
+        requires_invitation: data.requiresInvitation === "Yes",
       };
 
       const res = await fetch("/api/register-school", {
@@ -104,7 +112,6 @@ export default function RegisterPage() {
       }
     }
 
-    setLoading(false);
     setSuccess(true);
   };
 
@@ -201,16 +208,25 @@ export default function RegisterPage() {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="glass-card rounded-2xl px-6 sm:px-10 py-8"
         >
-          <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+            
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg text-sm mb-6">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-4">
               <p className="text-xs font-bold tracking-widest uppercase text-yellow-400">School Information</p>
               <div className="space-y-1.5">
                 <Label htmlFor="schoolName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">School Name</Label>
-                <Input id="schoolName" name="schoolName" placeholder="Enter the full school name" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="schoolName" {...register("schoolName")} placeholder="Enter the full school name" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.schoolName ? "border-red-500/50" : ""}`} />
+                {errors.schoolName && <p className="text-red-400 text-xs mt-1">{errors.schoolName.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="schoolAddress" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">School Address</Label>
-                <Input id="schoolAddress" name="schoolAddress" placeholder="Enter school physical address" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="schoolAddress" {...register("schoolAddress")} placeholder="Enter school physical address" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.schoolAddress ? "border-red-500/50" : ""}`} />
+                {errors.schoolAddress && <p className="text-red-400 text-xs mt-1">{errors.schoolAddress.message}</p>}
               </div>
             </div>
 
@@ -220,11 +236,13 @@ export default function RegisterPage() {
               <p className="text-xs font-bold tracking-widest uppercase text-yellow-400">Teacher-in-Charge</p>
               <div className="space-y-1.5">
                 <Label htmlFor="ticName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
-                <Input id="ticName" name="ticName" placeholder="Teacher-in-Charge full name" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="ticName" {...register("ticName")} placeholder="Teacher-in-Charge full name" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.ticName ? "border-red-500/50" : ""}`} />
+                {errors.ticName && <p className="text-red-400 text-xs mt-1">{errors.ticName.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="ticPhone" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Number</Label>
-                <Input id="ticPhone" name="ticPhone" type="tel" placeholder="e.g. +94 7X XXX XXXX" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="ticPhone" {...register("ticPhone")} type="tel" placeholder="e.g. +94 7X XXX XXXX" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.ticPhone ? "border-red-500/50" : ""}`} />
+                {errors.ticPhone && <p className="text-red-400 text-xs mt-1">{errors.ticPhone.message}</p>}
               </div>
             </div>
 
@@ -234,15 +252,18 @@ export default function RegisterPage() {
               <p className="text-xs font-bold tracking-widest uppercase text-yellow-400">Coordinator Account</p>
               <div className="space-y-1.5">
                 <Label htmlFor="coordinatorName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
-                <Input id="coordinatorName" name="coordinatorName" placeholder="Coordinator full name" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="coordinatorName" {...register("coordinatorName")} placeholder="Coordinator full name" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.coordinatorName ? "border-red-500/50" : ""}`} />
+                {errors.coordinatorName && <p className="text-red-400 text-xs mt-1">{errors.coordinatorName.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="coordinatorEmail" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
-                <Input id="coordinatorEmail" name="coordinatorEmail" type="email" placeholder="coordinator@school.lk" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="coordinatorEmail" {...register("coordinatorEmail")} type="email" placeholder="coordinator@school.lk" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.coordinatorEmail ? "border-red-500/50" : ""}`} />
+                {errors.coordinatorEmail && <p className="text-red-400 text-xs mt-1">{errors.coordinatorEmail.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="coordinatorPhone" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contact Number</Label>
-                <Input id="coordinatorPhone" name="coordinatorPhone" type="tel" placeholder="e.g. +94 7X XXX XXXX" required className="bg-black/40 border-border focus:border-yellow-500/60 h-12" />
+                <Input id="coordinatorPhone" {...register("coordinatorPhone")} type="tel" placeholder="e.g. +94 7X XXX XXXX" className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 ${errors.coordinatorPhone ? "border-red-500/50" : ""}`} />
+                {errors.coordinatorPhone && <p className="text-red-400 text-xs mt-1">{errors.coordinatorPhone.message}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -250,11 +271,10 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Input
                     id="password"
-                    name="password"
+                    {...register("password")}
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a secure password"
-                    required
-                    className="bg-black/40 border-border focus:border-yellow-500/60 h-12 pr-12"
+                    className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 pr-12 ${errors.password ? "border-red-500/50" : ""}`}
                   />
                   <button
                     type="button"
@@ -264,6 +284,7 @@ export default function RegisterPage() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
               </div>
 
               <div className="space-y-1.5">
@@ -271,11 +292,10 @@ export default function RegisterPage() {
                 <div className="relative">
                   <Input
                     id="confirmPassword"
-                    name="confirmPassword"
+                    {...register("confirmPassword")}
                     type={showConfirm ? "text" : "password"}
                     placeholder="Re-enter password to confirm"
-                    required
-                    className="bg-black/40 border-border focus:border-yellow-500/60 h-12 pr-12"
+                    className={`bg-black/40 border-border focus:border-yellow-500/60 h-12 pr-12 ${errors.confirmPassword ? "border-red-500/50" : ""}`}
                   />
                   <button
                     type="button"
@@ -285,6 +305,7 @@ export default function RegisterPage() {
                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.confirmPassword && <p className="text-red-400 text-xs mt-1">{errors.confirmPassword.message}</p>}
               </div>
             </div>
 
@@ -299,11 +320,9 @@ export default function RegisterPage() {
                   <label key={val} className="flex items-center gap-2 cursor-pointer group">
                     <input
                       type="radio"
-                      name="requiresInvitation"
                       value={val}
-                      onChange={() => setInvitation(val)}
+                      {...register("requiresInvitation")}
                       className="accent-yellow-400 w-4 h-4"
-                      required
                     />
                     <span className={`text-sm transition-colors ${invitation === val ? "text-yellow-400 font-semibold" : "text-muted-foreground group-hover:text-foreground"}`}>
                       {val}
@@ -311,6 +330,7 @@ export default function RegisterPage() {
                   </label>
                 ))}
               </div>
+              {errors.requiresInvitation && <p className="text-red-400 text-xs mt-1">{errors.requiresInvitation.message}</p>}
             </div>
 
             <div className="glass-card-gold rounded-xl p-5 space-y-3">
@@ -329,10 +349,10 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               className="w-full h-12 bg-yellow-500 hover:bg-yellow-400 text-black font-black tracking-widest uppercase shadow-lg shadow-yellow-500/30 hover:shadow-yellow-400/40 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:scale-100"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                   Registering…

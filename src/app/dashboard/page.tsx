@@ -26,6 +26,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 // ── Types ───────────────────────────────────────────────────────────────
 interface Contestant {
@@ -67,34 +70,71 @@ const AGE_CATEGORIES_BY_CATEGORY: Record<string, string[]> = {
 };
 
 // ── Add Contestant Dialog ────────────────────────────────────────────────
+const contestantSchema = z.object({
+  full_name: z.string().min(2, "Name must be at least 2 characters"),
+  date_of_birth: z.string().min(1, "Date of birth is required"),
+  category: z.string().min(1, "Please select a category"),
+  language: z.string().optional(),
+  age_category: z.string().optional(),
+}).refine((data) => {
+  const needsLang = !!LANGUAGES_BY_CATEGORY[data.category || ""];
+  if (needsLang && !data.language) return false;
+  return true;
+}, {
+  message: "Language is required",
+  path: ["language"]
+}).refine((data) => {
+  const needsAge = !!AGE_CATEGORIES_BY_CATEGORY[data.category || ""];
+  if (needsAge && !data.age_category) return false;
+  return true;
+}, {
+  message: "Age category is required",
+  path: ["age_category"]
+});
+
+type ContestantFormValues = z.infer<typeof contestantSchema>;
+
 function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c: Contestant) => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ full_name: "", date_of_birth: "", category: "", language: "", age_category: "" });
+  
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors }
+  } = useForm<ContestantFormValues>({
+    resolver: zodResolver(contestantSchema),
+    defaultValues: { full_name: "", date_of_birth: "", category: "", language: "", age_category: "" }
+  });
 
-  const selectedCategory = form.category;
+  const selectedCategory = watch("category");
   const needsLanguage = !!LANGUAGES_BY_CATEGORY[selectedCategory];
   const needsAge = !!AGE_CATEGORIES_BY_CATEGORY[selectedCategory];
   const availableLanguages = LANGUAGES_BY_CATEGORY[selectedCategory] ?? [];
   const availableAges = AGE_CATEGORIES_BY_CATEGORY[selectedCategory] ?? [];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  // Reset dependent fields when category changes
+  useEffect(() => {
+    // We can't easily reset specific fields on change without overriding others, 
+    // but the schema validation handles rejecting mismatched data.
+  }, [selectedCategory]);
 
+  const onSubmit = async (data: ContestantFormValues) => {
+    setLoading(true);
     const supabase = createClient();
     
-    // Default age category to "Open" if the selected category doesn't require one
-    const ageCategoryToSave = needsAge ? form.age_category : "Open";
+    const ageCategoryToSave = needsAge && data.age_category ? data.age_category : "Open";
 
-    const { data, error } = await supabase
+    const { data: dbData, error } = await supabase
       .from("contestants")
       .insert({
         school_id: schoolId,
-        full_name: form.full_name,
-        date_of_birth: form.date_of_birth,
-        category: form.category,
-        language: form.language || null,
+        full_name: data.full_name,
+        date_of_birth: data.date_of_birth,
+        category: data.category,
+        language: data.language || null,
         age_group: ageCategoryToSave,
       })
       .select()
@@ -107,17 +147,17 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
     }
 
     const newContestant: Contestant = {
-      id: data.id,
-      full_name: data.full_name,
-      date_of_birth: data.date_of_birth,
-      category: data.category,
-      language: data.language,
-      age_category: data.age_group,
-      created_at: data.created_at,
+      id: dbData.id,
+      full_name: dbData.full_name,
+      date_of_birth: dbData.date_of_birth,
+      category: dbData.category,
+      language: dbData.language,
+      age_category: dbData.age_group,
+      created_at: dbData.created_at,
     };
 
     onAdd(newContestant);
-    setForm({ full_name: "", date_of_birth: "", category: "", language: "", age_category: "" });
+    reset();
     setOpen(false);
     toast.success("Contestant added successfully!");
     setLoading(false);
@@ -136,43 +176,40 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
         <DialogHeader>
           <DialogTitle className="font-black gradient-text-green text-xl">Add Contestant</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2" noValidate>
           <div className="space-y-1.5">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
             <Input
-              value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+              {...register("full_name")}
               placeholder="Contestant full name"
-              required
-              className="bg-black/40 border-border focus:border-yellow-500/60 h-11"
+              className={`bg-black/40 border-border focus:border-yellow-500/60 h-11 ${errors.full_name ? "border-red-500" : ""}`}
             />
+            {errors.full_name && <p className="text-red-400 text-xs">{errors.full_name.message}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</Label>
             <Input
               type="date"
-              value={form.date_of_birth}
-              onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
-              required
-              className="bg-black/40 border-border focus:border-yellow-500/60 h-11"
+              {...register("date_of_birth")}
+              className={`bg-black/40 border-border focus:border-yellow-500/60 h-11 ${errors.date_of_birth ? "border-red-500" : ""}`}
             />
+            {errors.date_of_birth && <p className="text-red-400 text-xs">{errors.date_of_birth.message}</p>}
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
             <div className="relative">
               <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value, language: "", age_category: "" })}
-                required
-                className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer"
+                {...register("category")}
+                className={`w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer ${errors.category ? "border-red-500" : ""}`}
               >
                 <option value="" disabled>Select category</option>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
               <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
+            {errors.category && <p className="text-red-400 text-xs">{errors.category.message}</p>}
           </div>
 
           {needsLanguage && (
@@ -180,16 +217,15 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Language</Label>
               <div className="relative">
                 <select
-                  value={form.language}
-                  onChange={(e) => setForm({ ...form, language: e.target.value })}
-                  required
-                  className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer"
+                  {...register("language")}
+                  className={`w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer ${errors.language ? "border-red-500" : ""}`}
                 >
                   <option value="" disabled>Select language</option>
                   {availableLanguages.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               </div>
+              {errors.language && <p className="text-red-400 text-xs">{errors.language.message}</p>}
             </div>
           )}
 
@@ -198,16 +234,15 @@ function AddContestantDialog({ schoolId, onAdd }: { schoolId: string, onAdd: (c:
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Age Category</Label>
               <div className="relative">
                 <select
-                  value={form.age_category}
-                  onChange={(e) => setForm({ ...form, age_category: e.target.value })}
-                  required
-                  className="w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer"
+                  {...register("age_category")}
+                  className={`w-full h-11 px-3 bg-black/40 border border-border rounded-md text-sm text-foreground focus:border-yellow-500/60 focus:outline-none appearance-none cursor-pointer ${errors.age_category ? "border-red-500" : ""}`}
                 >
                   <option value="" disabled>Select age category</option>
                   {availableAges.map((a) => <option key={a} value={a}>{a}</option>)}
                 </select>
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
               </div>
+              {errors.age_category && <p className="text-red-400 text-xs">{errors.age_category.message}</p>}
             </div>
           )}
 
