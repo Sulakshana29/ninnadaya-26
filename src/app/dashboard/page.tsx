@@ -152,9 +152,10 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
       c.age_category === ageCategoryToSave
     ).length;
 
-    const limit = EVENT_LIMITS[data.category] || 50; // fallback to 50 if somehow undefined
-    if (sameSubCategoryCount >= limit) {
-      toast.error(`Limit reached: You can only add ${limit} contestants to this specific category combination.`);
+    // Rule: A school can only send 1 contestant per regular category combination.
+    if (data.category !== "Special Event" && sameSubCategoryCount >= 1) {
+      const details = [languageToSave, ageCategoryToSave !== "Open" ? ageCategoryToSave : ""].filter(Boolean).join(" ");
+      toast.error(`Your school has already registered a contestant for ${data.category} ${details ? `(${details})` : ""}. You can only send 1 person per category.`);
       return;
     }
 
@@ -177,8 +178,34 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
       return;
     }
 
-    // Passed all checks, proceed to save
+    // --- CHECK 3: Global Capacity Limit (API Call) ---
     setLoading(true);
+    
+    try {
+      const limitCheckRes = await fetch("/api/check-global-limit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: data.category,
+          language: languageToSave,
+          age_group: ageCategoryToSave,
+        }),
+      });
+
+      const limitCheckData = await limitCheckRes.json();
+
+      if (!limitCheckRes.ok) {
+        toast.error(limitCheckData.error || "Failed to check event capacity.");
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      toast.error("Network error while checking event capacity.");
+      setLoading(false);
+      return;
+    }
+
+    // Passed all checks, proceed to save
     const supabase = createClient();
 
     const { data: dbData, error } = await supabase
