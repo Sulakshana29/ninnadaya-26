@@ -12,7 +12,7 @@ const EVENT_LIMITS: Record<string, number> = {
   "Technical": 50,
   "Short Film": 40,
   "Special Event": 40,
-  "Editing": 35,
+  "Editing": 2, // TEMPORARY FOR TESTING
 };
 
 export async function POST(request: Request) {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     // Initialize Supabase admin client (bypasses RLS to count all schools' contestants)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
+
     if (!supabaseServiceKey) {
       console.error("Missing SUPABASE_SERVICE_ROLE_KEY");
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
@@ -67,8 +67,8 @@ export async function POST(request: Request) {
     // If the count meets or exceeds the global limit, reject it
     if (count !== null && count >= limit) {
       const details = [language, age_group !== "Open" ? age_group : ""].filter(Boolean).join(" ");
-      return NextResponse.json({ 
-        error: `Global Capacity Reached: The ${category} ${details ? `(${details})` : ""} event is fully booked and cannot accept any more contestants.` 
+      return NextResponse.json({
+        error: `Global Capacity Reached: The ${category} ${details ? `(${details})` : ""} event is fully booked and cannot accept any more contestants.`
       }, { status: 400 });
     }
 
