@@ -201,6 +201,29 @@
     z-index: 0;
   }
 
+  /* Global Smoke Background */
+  @keyframes smoke-float {
+    0% { transform: scale(1.1) translate(0, 0); }
+    33% { transform: scale(1.2) translate(-2%, 2%); }
+    66% { transform: scale(1.15) translate(2%, -2%); }
+    100% { transform: scale(1.1) translate(0, 0); }
+  }
+
+  .smoke-bg {
+    position: fixed;
+    inset: -10%;
+    width: 120%;
+    height: 120%;
+    z-index: -10;
+    pointer-events: none;
+    background-image: url('/smoke-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.25;
+    mix-blend-mode: screen;
+    animation: smoke-float 40s ease-in-out infinite;
+  }
+
   /* Green glow border (now Emerald) */
   .border-glow-green {
     border: 1px solid rgba(16, 185, 129, 0.4);

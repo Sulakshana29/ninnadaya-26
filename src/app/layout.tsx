@@ -43,7 +43,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} dark bg-[#020603]`}>
-      <body className="min-h-screen flex flex-col bg-[#020603] text-foreground antialiased">
+      <body className="min-h-screen flex flex-col bg-[#020603] text-foreground antialiased overflow-x-hidden">
+        <div className="smoke-bg" />
         <PublicShell>{children}</PublicShell>
         <Toaster richColors position="top-right" />
       </body>
