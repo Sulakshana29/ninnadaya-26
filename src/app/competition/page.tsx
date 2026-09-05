@@ -110,7 +110,7 @@ const faqs = [
   },
   {
     q: "Can contestants enter multiple categories?",
-    a: "Yes! A contestant can be entered into multiple categories. Simply add them separately with the appropriate category and language selection in the Coordinator Dashboard.",
+    a: "A contestant can participate in a maximum of two events: one regular category and the Special Event. Please note that a school can only register one contestant per regular category.",
   },
   {
     q: "What are the Photography, Graphic Design, and Short Film submission timelines?",

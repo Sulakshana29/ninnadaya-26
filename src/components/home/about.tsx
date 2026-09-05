@@ -130,9 +130,7 @@ export function AboutSection() {
               Ninnadaya Championship Trophy
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              The Overall Champions of Ninnadaya receive the prestigious Championship Trophy,
-              while the Best School Student Media Personality is awarded the coveted
-              <strong className="text-yellow-400"> Ninnadaya Media Personality Shield</strong>.
+              The Overall Champion of NINNADAYA &apos;26 will be awarded with the prestigious Championship Trophy. Special awards will also be presented to the <strong className="text-yellow-400">Best Sinhala Media Unit</strong>, <strong className="text-yellow-400">Best English Media Unit</strong> and <strong className="text-yellow-400">Best Tamil Media Unit</strong>.
             </p>
           </div>
         </motion.div>
