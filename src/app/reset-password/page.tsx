@@ -100,20 +100,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 bg-[#020603]">
-      {/* Background Image */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div 
-          className="absolute inset-0 opacity-40 mix-blend-screen"
-          style={{
-            backgroundImage: 'url("/images/bg-smoke.jpg")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
-        <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
-      </div>
+    <div className="relative min-h-screen flex items-center justify-center px-4">
 
       <div className="relative z-10 w-full max-w-md">
         <motion.div
