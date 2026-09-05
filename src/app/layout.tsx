@@ -19,7 +19,7 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Ninnadaya | Maliyadeva Balika Vidyalaya",
   description:
-    "Ninnadaya — the premier all-island media competition organized by Maliyadeva Balika Vidyalaya, Kurunegala. Register your school, add contestants, and compete across 9 categories.",
+    "Ninnadaya — the premier all-island media competition organized by Maliyadeva Balika Vidyalaya, Kurunegala. Register your school, add contestants, and compete across 11 categories.",
   keywords: ["Ninnadaya", "Maliyadeva Balika", "media competition", "Sri Lanka", "school competition"],
   openGraph: {
     title: "Ninnadaya | Maliyadeva Balika Vidyalaya",

@@ -102,7 +102,7 @@ function CategoryCard({ icon, name, langs, ages, index }: { icon: React.ReactNod
 const faqs = [
   {
     q: "Who is eligible to participate in Ninnadaya?",
-    a: "Young media enthusiasts from schools across Sri Lanka born after 31.01.2009 are eligible to participate in Ninnadaya. Each school must register as a coordinator before adding contestants.",
+    a: "Young media enthusiasts from schools across Sri Lanka born after 31.01.2008 are eligible to participate in Ninnadaya. Each school must register as a coordinator before adding contestants.",
   },
   {
     q: "How does school registration work?",
@@ -179,7 +179,7 @@ export default function CompetitionPage() {
             className="text-muted-foreground max-w-2xl mx-auto mb-10"
             style={{ fontSize: "clamp(0.95rem, 2.5vw, 1.15rem)", lineHeight: 1.8 }}
           >
-            The most prestigious all-island school media competition in Sri Lanka — 9 categories, 3 languages,
+            The most prestigious all-island school media competition in Sri Lanka — 11 categories, 3 languages,
             judged by Sri Lanka&apos;s finest media personalities.
           </motion.p>
 
@@ -226,7 +226,7 @@ export default function CompetitionPage() {
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
             <StatCard value={50} label="Schools Registered" suffix="+" />
             <StatCard value={500} label="Contestants" suffix="+" />
-            <StatCard value={9} label="Categories" />
+            <StatCard value={11} label="Categories" />
             <StatCard value={3} label="Languages" />
           </div>
         </div>

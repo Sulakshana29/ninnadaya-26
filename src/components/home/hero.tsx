@@ -92,7 +92,7 @@ export function HeroSection() {
           className="grid grid-cols-3 gap-4 mt-16 max-w-md mx-auto"
         >
           {[
-            { icon: <Trophy size={18} />, value: "9", label: "Categories" },
+            { icon: <Trophy size={18} />, value: "11", label: "Categories" },
             { icon: <Users size={18} />, value: "3", label: "Languages" },
             { icon: <Star size={18} />, value: "#1", label: "Competition" },
           ].map((stat) => (
