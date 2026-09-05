@@ -562,10 +562,10 @@ export default function DashboardPage() {
                   <TableRow className="border-border hover:bg-transparent">
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">#</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Name</TableHead>
-                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider hidden sm:table-cell">DOB</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">DOB</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Category</TableHead>
-                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider hidden md:table-cell">Language</TableHead>
-                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider hidden lg:table-cell">Age Group</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Language</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Age Group</TableHead>
                     <TableHead className="text-right text-muted-foreground text-xs font-bold uppercase tracking-wider">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -573,8 +573,8 @@ export default function DashboardPage() {
                   {contestants.map((c, i) => (
                     <TableRow key={c.id} className="border-border hover:bg-white/3 transition-colors">
                       <TableCell className="text-muted-foreground text-sm">{i + 1}</TableCell>
-                      <TableCell className="font-semibold text-foreground text-sm">{c.full_name}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm hidden sm:table-cell">
+                      <TableCell className="font-semibold text-foreground text-sm whitespace-nowrap">{c.full_name}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                         {new Date(c.date_of_birth).toLocaleDateString("en-GB")}
                       </TableCell>
                       <TableCell>
@@ -585,10 +585,10 @@ export default function DashboardPage() {
                           {c.category}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm hidden md:table-cell">
+                      <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                         {c.language ?? <span className="text-muted-foreground/40">—</span>}
                       </TableCell>
-                      <TableCell className="hidden lg:table-cell">
+                      <TableCell className="whitespace-nowrap">
                         <Badge variant="outline" className="text-xs border-yellow-500/30 text-yellow-400 bg-yellow-500/10">
                           {c.age_category}
                         </Badge>
