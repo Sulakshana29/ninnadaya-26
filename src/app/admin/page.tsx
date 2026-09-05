@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Button } from "@/components/ui/button";
 import { AdminDashboardClient } from "@/components/admin/admin-dashboard-client";
 
 export const dynamic = 'force-dynamic';
