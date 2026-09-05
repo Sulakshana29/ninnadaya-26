@@ -219,7 +219,7 @@
     background-image: url('/smoke-bg.jpg');
     background-size: cover;
     background-position: center;
-    opacity: 0.25;
+    opacity: 0.7;
     mix-blend-mode: screen;
     animation: smoke-float 40s ease-in-out infinite;
   }
