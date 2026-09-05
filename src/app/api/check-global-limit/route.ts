@@ -1,19 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-const EVENT_LIMITS: Record<string, number> = {
-  "Announcing": 50,
-  "Announcing (Tamil)": 50,
-  "Sports Commentary": 50,
-  "Dubbing": 50,
-  "Cartoon Drawing": 50,
-  "Photography": 50,
-  "Graphic Designing": 40,
-  "Technical": 50,
-  "Short Film": 40,
-  "Special Event": 40,
-  "Editing": 2, // TEMPORARY FOR TESTING
-};
+import { EVENT_LIMITS } from "@/lib/constants";
 
 export async function POST(request: Request) {
   try {

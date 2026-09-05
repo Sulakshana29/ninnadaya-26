@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { SmokyBackground } from "@/components/layout/smoky-background";
+import { Button } from "@/components/ui/button";
+import { AdminDashboardClient } from "@/components/admin/admin-dashboard-client";
 
 export const dynamic = 'force-dynamic';
 
@@ -108,109 +109,7 @@ export default async function AdminDashboardPage() {
             <p className="text-sm opacity-80">{error}</p>
           </div>
         ) : (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="glass-card p-6 rounded-2xl border-t border-white/5 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                  <School size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Total Schools</p>
-                  <p className="text-3xl font-black">{schools.length}</p>
-                </div>
-              </div>
-              <div className="glass-card p-6 rounded-2xl border-t border-white/5 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
-                  <Users size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Total Contestants</p>
-                  <p className="text-3xl font-black">{contestants.length}</p>
-                </div>
-              </div>
-              <div className="glass-card p-6 rounded-2xl border-t border-white/5 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400">
-                  <Trophy size={24} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Active Categories</p>
-                  <p className="text-3xl font-black">{Object.keys(categoryCounts).length}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Tables Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
-              {/* Contestants Table (Spans 2 columns) */}
-              <div className="lg:col-span-2 glass-card rounded-2xl overflow-hidden border-t border-white/5">
-                <div className="p-6 border-b border-border/50">
-                  <h2 className="font-black text-xl">All Contestants</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Live feed of all registrations across the country</p>
-                </div>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader className="bg-black/20">
-                      <TableRow className="border-border/50 hover:bg-transparent">
-                        <TableHead className="font-bold text-muted-foreground">Name</TableHead>
-                        <TableHead className="font-bold text-muted-foreground">School</TableHead>
-                        <TableHead className="font-bold text-muted-foreground">Category</TableHead>
-                        <TableHead className="font-bold text-muted-foreground">Age</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {contestants.length === 0 ? (
-                        <TableRow className="border-border/50 hover:bg-transparent">
-                          <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                            No contestants registered yet.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        contestants.map((c: any) => (
-                          <TableRow key={c.id} className="border-border/50 hover:bg-white/5">
-                            <TableCell className="font-medium">{c.full_name}</TableCell>
-                            <TableCell className="text-muted-foreground">{c.schools?.school_name}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="border-white/10 bg-white/5 text-foreground">
-                                {c.category}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">{c.age_group}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-
-              {/* Schools Summary (Spans 1 column) */}
-              <div className="glass-card rounded-2xl overflow-hidden border-t border-white/5 h-fit">
-                <div className="p-6 border-b border-border/50">
-                  <h2 className="font-black text-xl">Registered Schools</h2>
-                </div>
-                <div className="divide-y divide-border/50 max-h-[600px] overflow-y-auto">
-                  {schools.length === 0 ? (
-                    <div className="p-8 text-center text-muted-foreground">No schools registered.</div>
-                  ) : (
-                    schools.map((s: any) => (
-                      <div key={s.id} className="p-4 hover:bg-white/5 transition-colors">
-                        <h3 className="font-bold text-sm mb-1">{s.school_name}</h3>
-                        <p className="text-xs text-muted-foreground mb-2">{s.coordinator_name} ({s.coordinator_phone})</p>
-                        {s.requires_invitation && (
-                          <Badge variant="outline" className="border-yellow-500/30 text-yellow-500 bg-yellow-500/10 text-[10px] px-1.5">
-                            Needs Invitation Letter
-                          </Badge>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-            </div>
-          </>
+          <AdminDashboardClient schools={schools} contestants={contestants} />
         )}
       </div>
     </div>
