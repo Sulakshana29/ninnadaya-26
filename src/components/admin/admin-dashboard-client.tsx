@@ -104,7 +104,7 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
           <p className="text-sm text-muted-foreground mt-1">Real-time status of available spots across all specific sub-categories (Language & Age)</p>
         </div>
         <div className="p-6">
-          <Accordion type="single" collapsible className="w-full space-y-4">
+          <Accordion className="w-full space-y-4">
             {CATEGORIES.map(category => {
               const limit = EVENT_LIMITS[category] || 50;
               const langs = LANGUAGES_BY_CATEGORY[category] || [null];
