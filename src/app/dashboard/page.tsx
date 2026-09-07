@@ -41,7 +41,7 @@ interface Contestant {
   created_at: string;
 }
 
-import { CATEGORIES, LANGUAGES_BY_CATEGORY, AGE_CATEGORIES_BY_CATEGORY, EVENT_LIMITS } from "@/lib/constants";
+import { CATEGORIES, LANGUAGES_BY_CATEGORY, AGE_CATEGORIES_BY_CATEGORY } from "@/lib/constants";
 
 // ── Add Contestant Dialog ────────────────────────────────────────────────
 const contestantSchema = z.object({
@@ -132,32 +132,7 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
       return;
     }
 
-    // --- CHECK 3: Global Capacity Limit (API Call) ---
     setLoading(true);
-    
-    try {
-      const limitCheckRes = await fetch("/api/check-global-limit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          category: data.category,
-          language: languageToSave,
-          age_group: ageCategoryToSave,
-        }),
-      });
-
-      const limitCheckData = await limitCheckRes.json();
-
-      if (!limitCheckRes.ok) {
-        toast.error(limitCheckData.error || "Failed to check event capacity.");
-        setLoading(false);
-        return;
-      }
-    } catch (err) {
-      toast.error("Network error while checking event capacity.");
-      setLoading(false);
-      return;
-    }
 
     // Passed all checks, proceed to save
     const supabase = createClient();

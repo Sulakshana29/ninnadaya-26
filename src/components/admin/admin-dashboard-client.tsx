@@ -18,7 +18,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Search, ArrowUpDown, School, Users, Trophy } from "lucide-react";
-import { CATEGORIES, EVENT_LIMITS, LANGUAGES_BY_CATEGORY, AGE_CATEGORIES_BY_CATEGORY } from "@/lib/constants";
+import { CATEGORIES, LANGUAGES_BY_CATEGORY, AGE_CATEGORIES_BY_CATEGORY } from "@/lib/constants";
 import { motion } from "framer-motion";
 
 export function AdminDashboardClient({ schools, contestants }: { schools: any[], contestants: any[] }) {
@@ -97,16 +97,15 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
         </div>
       </div>
 
-      {/* ── Capacity Tracker ── */}
+      {/* ── Registration Counter ── */}
       <div className="glass-card rounded-2xl overflow-hidden border-t border-white/5 mb-8">
         <div className="p-6 border-b border-border/50">
-          <h2 className="font-black text-xl">Global Capacity Tracker</h2>
-          <p className="text-sm text-muted-foreground mt-1">Real-time status of available spots across all specific sub-categories (Language & Age)</p>
+          <h2 className="font-black text-xl">Registration Stats</h2>
+          <p className="text-sm text-muted-foreground mt-1">Live count of registrations across all specific sub-categories (Language & Age)</p>
         </div>
         <div className="p-6">
           <Accordion className="w-full space-y-4">
             {CATEGORIES.map(category => {
-              const limit = EVENT_LIMITS[category] || 50;
               const langs = LANGUAGES_BY_CATEGORY[category] || [null];
               const ages = AGE_CATEGORIES_BY_CATEGORY[category] || ["Open"];
 
@@ -115,7 +114,6 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
                   <AccordionTrigger className="hover:no-underline py-4">
                     <div className="flex items-center justify-between w-full pr-4">
                       <h3 className="font-bold text-lg text-foreground">{category}</h3>
-                      <Badge variant="outline" className="border-white/10 bg-white/5 text-muted-foreground hidden sm:flex">{limit} spots per group</Badge>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-2 pb-6 space-y-6">
@@ -138,38 +136,12 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
                               return true;
                             }).length;
 
-                            const remaining = limit - count;
-                            const percentage = (count / limit) * 100;
-                            
-                            let colorClass = "bg-green-500";
-                            let textColor = "text-green-400";
-                            if (percentage >= 90) {
-                              colorClass = "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]";
-                              textColor = "text-red-400";
-                            } else if (percentage >= 70) {
-                              colorClass = "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]";
-                              textColor = "text-yellow-400";
-                            }
-
                             return (
-                              <div key={age} className="bg-black/40 p-4 rounded-xl border border-white/5">
-                                <div className="flex justify-between items-center mb-3">
-                                  <h5 className="font-semibold text-sm text-foreground">{age}</h5>
-                                  <span className={`text-xs font-black ${textColor}`}>
-                                    {percentage >= 100 ? "FULL" : `${remaining} left`}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-black/40 rounded-full h-2.5 mb-3 overflow-hidden border border-white/5">
-                                  <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(percentage, 100)}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
-                                    className={`h-2.5 rounded-full ${colorClass}`}
-                                  />
-                                </div>
-                                <div className="flex justify-between text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                                  <span>Filled: <strong className="text-foreground">{count}</strong></span>
-                                  <span>Limit: {limit}</span>
+                              <div key={age} className="bg-black/40 p-4 rounded-xl border border-white/5 flex items-center justify-between">
+                                <h5 className="font-semibold text-sm text-foreground">{age}</h5>
+                                <div className="text-right">
+                                  <span className="text-2xl font-black text-emerald-400">{count}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase tracking-widest block -mt-1">Registered</span>
                                 </div>
                               </div>
                             );

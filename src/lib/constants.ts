@@ -1,16 +1,3 @@
-export const EVENT_LIMITS: Record<string, number> = {
-  "Announcing": 50,
-  "Announcing (Tamil)": 50,
-  "Sports Commentary": 50,
-  "Dubbing": 50,
-  "Cartoon Drawing": 50,
-  "Photography": 50,
-  "Graphic Designing": 40,
-  "Technical": 50,
-  "Short Film": 40,
-  "Special Event": 40,
-  "Editing": 35,
-};
 
 export const CATEGORIES = [
   "Announcing",
