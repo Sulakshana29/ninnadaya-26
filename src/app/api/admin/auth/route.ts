@@ -4,7 +4,12 @@ import { cookies } from "next/headers";
 export async function POST(request: Request) {
   try {
     const { password } = await request.json();
-    const correctPassword = process.env.ADMIN_PASSWORD || "NinnadayaAdmin26";
+    const correctPassword = process.env.ADMIN_PASSWORD;
+
+    if (!correctPassword) {
+      console.error("CRITICAL: ADMIN_PASSWORD environment variable is not set.");
+      return NextResponse.json({ success: false, error: "Server misconfiguration. Please contact support." }, { status: 500 });
+    }
 
     if (password === correctPassword) {
       // Set a secure cookie
@@ -14,7 +19,7 @@ export async function POST(request: Request) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7, // 1 week
+        maxAge: 60 * 60 * 2, // 2 hours
       });
 
       return NextResponse.json({ success: true });
