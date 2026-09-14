@@ -190,6 +190,9 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
                   <TableHead className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors" onClick={() => handleSort('category')}>
                     Category <ArrowUpDown className="inline ml-1 size-3" />
                   </TableHead>
+                  <TableHead className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors" onClick={() => handleSort('language')}>
+                    Language <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
                   <TableHead className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors" onClick={() => handleSort('age_group')}>
                     Age <ArrowUpDown className="inline ml-1 size-3" />
                   </TableHead>
@@ -198,7 +201,7 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
               <TableBody>
                 {sortedContestants.length === 0 ? (
                   <TableRow className="border-border/50 hover:bg-transparent">
-                    <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
                       No contestants found.
                     </TableCell>
                   </TableRow>
@@ -211,6 +214,9 @@ export function AdminDashboardClient({ schools, contestants }: { schools: any[],
                         <Badge variant="outline" className="border-white/10 bg-white/5 text-foreground">
                           {c.category}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {c.language ?? <span className="text-muted-foreground/30">—</span>}
                       </TableCell>
                       <TableCell className="text-muted-foreground whitespace-nowrap">{c.age_group}</TableCell>
                     </TableRow>
