@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Trophy, Plus, ChevronDown, Trash2 } from "lucide-react";
+import { Users, Trophy, Plus, ChevronDown, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -114,21 +114,28 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
     }
 
     // --- CHECK 2: Individual Participation Limit ---
-    const samePersonEntries = contestants.filter(c => 
-      c.full_name.trim().toLowerCase() === data.full_name.trim().toLowerCase() && 
+    const samePersonEntries = contestants.filter(c =>
+      c.full_name.trim().toLowerCase() === data.full_name.trim().toLowerCase() &&
       c.date_of_birth === data.date_of_birth
     );
 
-    const hasRegularEvent = samePersonEntries.some(c => c.category !== "Special Event");
+    const regularEventCount = samePersonEntries.filter(c => c.category !== "Special Event").length;
     const hasSpecialEvent = samePersonEntries.some(c => c.category === "Special Event");
     const isAddingSpecialEvent = data.category === "Special Event";
+
+    // Check if student is already in this exact same category
+    const alreadyInThisCategory = samePersonEntries.some(c => c.category === data.category);
+    if (alreadyInThisCategory) {
+      toast.error(`${data.full_name} is already registered in ${data.category}.`);
+      return;
+    }
 
     if (isAddingSpecialEvent && hasSpecialEvent) {
       toast.error(`${data.full_name} is already registered in a Special Event.`);
       return;
     }
-    if (!isAddingSpecialEvent && hasRegularEvent) {
-      toast.error(`${data.full_name} is already registered in a regular event. They can only enter 1 regular event and 1 Special Event.`);
+    if (!isAddingSpecialEvent && regularEventCount >= 2) {
+      toast.error(`${data.full_name} is already registered in 2 regular events. They can only enter a maximum of 2 regular events and 1 Special Event.`);
       return;
     }
 
@@ -274,6 +281,85 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
   );
 }
 
+// ── Edit Profile Dialog ──────────────────────────────────────────────────
+function EditProfileDialog({ school, onUpdate }: { school: { id: string; name: string; coordinator: string } | null; onUpdate: (updated: { name: string; coordinator: string }) => void }) {
+  const [open, setOpen] = useState(false);
+  const [schoolName, setSchoolName] = useState(school?.name ?? "");
+  const [coordinatorName, setCoordinatorName] = useState(school?.coordinator ?? "");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSchoolName(school?.name ?? "");
+      setCoordinatorName(school?.coordinator ?? "");
+    }
+  }, [open, school]);
+
+  const handleSave = async () => {
+    if (!schoolName.trim() || !coordinatorName.trim()) {
+      toast.error("School name and coordinator name cannot be empty.");
+      return;
+    }
+    if (!school?.id) return;
+    setSaving(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("schools")
+      .update({ school_name: schoolName.trim(), coordinator_name: coordinatorName.trim() })
+      .eq("id", school.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Failed to update profile. Please try again.");
+    } else {
+      toast.success("Profile updated successfully!");
+      onUpdate({ name: schoolName.trim(), coordinator: coordinatorName.trim() });
+      setOpen(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10 text-foreground text-xs">
+          <Pencil size={13} /> Edit Profile
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="glass-card border border-border/50 max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-black text-lg">Edit School Profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">School Name</Label>
+            <Input
+              value={schoolName}
+              onChange={e => setSchoolName(e.target.value)}
+              placeholder="Enter school name"
+              className="bg-black/30 border-border/50"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Coordinator Name</Label>
+            <Input
+              value={coordinatorName}
+              onChange={e => setCoordinatorName(e.target.value)}
+              placeholder="Enter coordinator name"
+              className="bg-black/30 border-border/50"
+            />
+          </div>
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full font-bold bg-yellow-500 hover:bg-yellow-400 text-black"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── Main Dashboard ───────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [contestants, setContestants] = useState<Contestant[]>([]);
@@ -348,6 +434,10 @@ export default function DashboardPage() {
   };
   const handleAdd = (c: Contestant) => setContestants((prev) => [c, ...prev]);
 
+  const handleUpdateProfile = (updated: { name: string; coordinator: string }) => {
+    setSchool(prev => prev ? { ...prev, ...updated } : prev);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this contestant? This action cannot be undone.")) return;
     
@@ -395,7 +485,7 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl px-8 py-10 mb-4 border border-emerald-800/30 relative overflow-hidden">
             {/* Subtle background orb */}
             <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 30% 50%, rgba(234,179,8,0.07) 0%, transparent 65%)" }} />
-            <div className="relative z-10">
+            <div className="relative z-10 flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-yellow-400/70 mb-2">Coordinator Dashboard</p>
                 <h1
@@ -405,6 +495,9 @@ export default function DashboardPage() {
                   Ninnadaya Gateway
                 </h1>
                 <p className="text-muted-foreground text-sm mt-2">Contest management panel</p>
+              </div>
+              <div className="flex-shrink-0 pt-1">
+                <EditProfileDialog school={school} onUpdate={handleUpdateProfile} />
               </div>
             </div>
           </div>
