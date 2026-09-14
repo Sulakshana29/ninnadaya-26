@@ -319,11 +319,13 @@ function EditProfileDialog({ school, onUpdate }: { school: { id: string; name: s
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10 text-foreground text-xs">
-          <Pencil size={13} /> Edit Profile
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm" className="gap-2 border-white/10 bg-white/5 hover:bg-white/10 text-foreground text-xs">
+            <Pencil size={13} /> Edit Profile
+          </Button>
+        }
+      />
       <DialogContent className="glass-card border border-border/50 max-w-md">
         <DialogHeader>
           <DialogTitle className="font-black text-lg">Edit School Profile</DialogTitle>
