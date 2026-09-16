@@ -106,10 +106,10 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
       c.age_category === ageCategoryToSave
     ).length;
 
-    // Rule: A school can only send 1 contestant per regular category combination.
-    if (data.category !== "Special Event" && sameSubCategoryCount >= 1) {
+    // Rule: A school can only send 2 contestants per regular category combination.
+    if (data.category !== "Special Event" && sameSubCategoryCount >= 2) {
       const details = [languageToSave, ageCategoryToSave !== "Open" ? ageCategoryToSave : ""].filter(Boolean).join(" ");
-      toast.error(`Your school has already registered a contestant for ${data.category} ${details ? `(${details})` : ""}. You can only send 1 person per category.`);
+      toast.error(`Your school has already registered 2 contestants for ${data.category} ${details ? `(${details})` : ""}. You can only send 2 people per category.`);
       return;
     }
 
@@ -134,8 +134,8 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
       toast.error(`${data.full_name} is already registered in a Special Event.`);
       return;
     }
-    if (!isAddingSpecialEvent && regularEventCount >= 2) {
-      toast.error(`${data.full_name} is already registered in 2 regular events. They can only enter a maximum of 2 regular events and 1 Special Event.`);
+    if (!isAddingSpecialEvent && regularEventCount >= 1) {
+      toast.error(`${data.full_name} is already registered in a regular event. They can only enter a maximum of 1 regular event and 1 Special Event.`);
       return;
     }
 

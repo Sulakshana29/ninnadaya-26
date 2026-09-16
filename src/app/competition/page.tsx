@@ -110,7 +110,7 @@ const faqs = [
   },
   {
     q: "Can contestants enter multiple categories?",
-    a: "A contestant can participate in a maximum of two events: one regular category and the Special Event. Please note that a school can only register one contestant per regular category.",
+    a: "A contestant can participate in a maximum of two events: one regular category and the Special Event. Please note that a school can register up to two contestants per regular category.",
   },
   {
     q: "What are the Photography, Graphic Design, and Short Film submission timelines?",
