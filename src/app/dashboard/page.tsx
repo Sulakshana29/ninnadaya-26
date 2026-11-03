@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Trophy, Plus, ChevronDown, Trash2, Pencil } from "lucide-react";
+import { Users, Trophy, Plus, ChevronDown, Trash2, Pencil, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,6 +33,7 @@ import * as z from "zod";
 // ── Types ───────────────────────────────────────────────────────────────
 interface Contestant {
   id: string;
+  entry_code: string | null;
   full_name: string;
   date_of_birth: string;
   category: string;
@@ -175,6 +176,7 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
 
     const newContestant: Contestant = {
       id: dbData.id,
+      entry_code: dbData.entry_code ?? null,
       full_name: dbData.full_name,
       date_of_birth: dbData.date_of_birth,
       category: dbData.category,
@@ -377,6 +379,7 @@ function EditProfileDialog({ school, onUpdate }: { school: { id: string; name: s
 export default function DashboardPage() {
   const [contestants, setContestants] = useState<Contestant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
   const [school, setSchool] = useState<{ id: string; name: string; coordinator: string } | null>(null);
   const router = useRouter();
 
@@ -412,12 +415,20 @@ export default function DashboardPage() {
         coordinator: schoolData.coordinator_name,
       });
 
-      // Fetch contestants for this school
-      const { data: contestantsData, error: contestantsError } = await supabase
-        .from("contestants")
-        .select("*")
-        .eq("school_id", schoolData.id)
-        .order("created_at", { ascending: false });
+      // Fetch contestants and registration settings for this school
+      const [{ data: contestantsData, error: contestantsError }, { data: settingsData }] =
+        await Promise.all([
+          supabase
+            .from("contestants")
+            .select("*")
+            .eq("school_id", schoolData.id)
+            .order("created_at", { ascending: false }),
+          supabase.from("app_settings").select("registration_open").eq("id", true).maybeSingle(),
+        ]);
+
+      if (settingsData && typeof settingsData.registration_open === "boolean") {
+        setRegistrationOpen(settingsData.registration_open);
+      }
 
       if (contestantsError) {
         toast.error("Could not load contestants.");
@@ -425,6 +436,7 @@ export default function DashboardPage() {
         setContestants(
           contestantsData.map(c => ({
             id: c.id,
+            entry_code: c.entry_code ?? null,
             full_name: c.full_name,
             date_of_birth: c.date_of_birth,
             category: c.category,
@@ -522,7 +534,7 @@ export default function DashboardPage() {
             {[
               { label: "School Registered", value: school?.name ?? "Loading…" },
               { label: "Coordinator Name", value: school?.coordinator ?? "Loading…" },
-              { label: "Registration Status", value: "Active ✓" },
+              { label: "Registration Status", value: registrationOpen ? "Open ✓" : "Closed 🔒" },
             ].map((item, i) => (
               <motion.div
                 key={item.label}
@@ -575,9 +587,36 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 border-b border-border">
             <div>
               <h2 className="font-black text-lg text-foreground">Contestants</h2>
-              <p className="text-muted-foreground text-sm">Manage your school&apos;s competition entries</p>
+              <p className="text-muted-foreground text-sm">
+                Each student receives an anonymous <span className="text-yellow-400 font-semibold">Entry Code</span> for stage &amp; online events
+              </p>
             </div>
-            {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} contestants={contestants} />}
+            <div className="flex items-center gap-2 flex-wrap">
+              {contestants.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const lines = contestants.map(
+                      (c) =>
+                        `${c.entry_code || "PENDING"} — ${c.full_name} (${c.category}${
+                          c.language ? ` / ${c.language}` : ""
+                        }${c.age_category !== "Open" ? ` / ${c.age_category}` : ""}) | DOB: ${c.date_of_birth}`
+                    );
+                    navigator.clipboard.writeText(
+                      `Ninnadaya '26 Entry Codes — ${school?.name || ""}\n\n` + lines.join("\n")
+                    );
+                    toast.success("All student Entry Codes copied to clipboard!");
+                  }}
+                  className="border-white/10 bg-white/5 hover:bg-white/10 text-xs font-bold"
+                >
+                  <Copy size={14} className="mr-1.5" /> Copy Entry Codes
+                </Button>
+              )}
+              {school && registrationOpen && (
+                <AddContestantDialog schoolId={school.id} onAdd={handleAdd} contestants={contestants} />
+              )}
+            </div>
           </div>
 
           {/* Table */}
@@ -590,14 +629,14 @@ export default function DashboardPage() {
               <div className="text-5xl mb-4">🎬</div>
               <p className="font-bold text-foreground mb-2">No contestants yet</p>
               <p className="text-muted-foreground text-sm mb-6">Start adding your school&apos;s contestants for Ninnadaya &apos;26</p>
-              {school && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} contestants={contestants} />}
+              {school && registrationOpen && <AddContestantDialog schoolId={school.id} onAdd={handleAdd} contestants={contestants} />}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">#</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Entry Code</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Name</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">DOB</TableHead>
                     <TableHead className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Category</TableHead>
@@ -607,9 +646,13 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contestants.map((c, i) => (
+                  {contestants.map((c) => (
                     <TableRow key={c.id} className="border-border hover:bg-white/3 transition-colors">
-                      <TableCell className="text-muted-foreground text-sm">{i + 1}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <span className="font-mono text-xs font-bold px-2.5 py-1 rounded bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">
+                          {c.entry_code ?? "—"}
+                        </span>
+                      </TableCell>
                       <TableCell className="font-semibold text-foreground text-sm whitespace-nowrap">{c.full_name}</TableCell>
                       <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                         {new Date(c.date_of_birth).toLocaleDateString("en-GB")}
@@ -631,13 +674,17 @@ export default function DashboardPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <button
-                          onClick={() => handleDelete(c.id)}
-                          className="p-2 rounded-lg text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition-colors"
-                          aria-label="Delete contestant"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {registrationOpen ? (
+                          <button
+                            onClick={() => handleDelete(c.id)}
+                            className="p-2 rounded-lg text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                            aria-label="Delete contestant"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/40">Locked</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
