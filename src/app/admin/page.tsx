@@ -1,6 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ExportButton } from "@/components/admin/export-button";
-import { Users, School, Trophy, LogOut } from "lucide-react";
+import { Users, School, Trophy } from "lucide-react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-session";
+import { AdminLogoutButton } from "@/components/admin/logout-button";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -17,8 +21,14 @@ import { AdminDashboardClient } from "@/components/admin/admin-dashboard-client"
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  let schools = [];
-  let contestants = [];
+  // Defense in depth: verify the signed admin session here too, not only in the proxy
+  const cookieStore = await cookies();
+  if (!(await verifyAdminToken(cookieStore.get(ADMIN_COOKIE)?.value))) {
+    redirect("/admin/login");
+  }
+
+  let schools: any[] = [];
+  let contestants: any[] = [];
   let error = null;
 
   try {
@@ -93,12 +103,7 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <ExportButton data={exportData} />
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-500/20 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-sm font-medium"
-            >
-              <LogOut size={14} /> Exit Admin
-            </Link>
+            <AdminLogoutButton />
           </div>
         </div>
 

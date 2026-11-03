@@ -1,6 +1,7 @@
 -- ============================================================
 -- NINNADAYA '26 - Supabase Database Schema
 -- Run this in: Supabase Dashboard → SQL Editor → New Query
+-- THEN run supabase/migrations/001_security_fixes.sql (required — signup depends on it)
 -- ============================================================
 
 -- 1. Schools table — one row per registered school

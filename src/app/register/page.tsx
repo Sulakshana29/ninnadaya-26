@@ -10,19 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { createClient } from "@/lib/supabase/client";
-import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 const registerSchema = z.object({
-  schoolName: z.string().min(2, "School name must be at least 2 characters"),
-  schoolAddress: z.string().min(5, "Address is too short"),
-  ticName: z.string().min(2, "Teacher name must be at least 2 characters"),
-  ticPhone: z.string().regex(/^\+?[\d\s-]{9,15}$/, "Invalid phone number"),
-  coordinatorName: z.string().min(2, "Coordinator name must be at least 2 characters"),
-  coordinatorEmail: z.string().email("Invalid email address"),
-  coordinatorPhone: z.string().regex(/^\+?[\d\s-]{9,15}$/, "Invalid phone number"),
+  schoolName: z.string().trim().min(2, "School name must be at least 2 characters").max(200),
+  schoolAddress: z.string().trim().min(5, "Address is too short").max(500),
+  ticName: z.string().trim().min(2, "Teacher name must be at least 2 characters").max(120),
+  ticPhone: z.string().trim().regex(/^\+?[\d\s-]{9,15}$/, "Invalid phone number"),
+  coordinatorName: z.string().trim().min(2, "Coordinator name must be at least 2 characters").max(120),
+  coordinatorEmail: z.string().trim().email("Invalid email address").max(254),
+  coordinatorPhone: z.string().trim().regex(/^\+?[\d\s-]{9,15}$/, "Invalid phone number"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   requiresInvitation: z.enum(["Yes", "No"], {
@@ -68,49 +67,40 @@ export default function RegisterPage() {
     setError(null);
     const supabase = createClient();
 
-    // 1. Create the auth account
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+    // Create the auth account. School details are sent as metadata; a database trigger
+    // (supabase/migrations/001_security_fixes.sql) creates the school row in the same
+    // transaction, so the account and school are always created together.
+    const { error: signUpError } = await supabase.auth.signUp({
       email: data.coordinatorEmail,
       password: data.password,
       options: {
         data: {
           school_name: data.schoolName,
+          school_address: data.schoolAddress,
+          teacher_name: data.ticName,
+          teacher_phone: data.ticPhone,
           coordinator_name: data.coordinatorName,
+          coordinator_phone: data.coordinatorPhone,
+          requires_invitation: data.requiresInvitation === "Yes",
         },
       },
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      setError(
+        signUpError.message.toLowerCase().includes("database error")
+          ? "We couldn't save your school details. Please check the fields and try again, or contact support."
+          : signUpError.message
+      );
       return;
     }
 
-    // 2. Save school details via secure API route (bypasses RLS during signup)
-    if (authData.user) {
-      const payload = {
-        user_id: authData.user.id,
-        school_name: data.schoolName,
-        school_address: data.schoolAddress,
-        teacher_name: data.ticName,
-        teacher_phone: data.ticPhone,
-        coordinator_name: data.coordinatorName,
-        coordinator_email: data.coordinatorEmail,
-        coordinator_phone: data.coordinatorPhone,
-        requires_invitation: data.requiresInvitation === "Yes",
-      };
-
-      const res = await fetch("/api/register-school", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        toast.warning("Account created but school details could not be saved. Please contact support.");
-        console.error("DB insert error:", errData.error);
-      }
-    }
+    // Fire-and-forget welcome email (server only emails freshly-registered schools, once)
+    fetch("/api/welcome-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: data.coordinatorEmail }),
+    }).catch(() => {});
 
     setSuccess(true);
   };

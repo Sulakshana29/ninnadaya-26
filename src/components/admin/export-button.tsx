@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { sanitizeCsvCell } from "@/lib/utils";
 
 export function ExportButton({ data }: { data: any[] }) {
   const handleExport = () => {
@@ -15,8 +16,8 @@ export function ExportButton({ data }: { data: any[] }) {
       headers.join(","), // Header row
       ...data.map(row => 
         headers.map(header => {
-          const cell = row[header] === null || row[header] === undefined ? "" : String(row[header]);
-          // Escape quotes and wrap in quotes if contains comma
+          const cell = sanitizeCsvCell(row[header]);
+          // Escape quotes and wrap every cell in quotes
           return `"${cell.replace(/"/g, '""')}"`;
         }).join(",")
       )

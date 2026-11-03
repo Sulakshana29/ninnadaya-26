@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-session";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -30,10 +31,10 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes (except /admin/login)
+  // Protect /admin routes (except /admin/login) — requires a valid signed session token
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    const adminSession = request.cookies.get("admin_session")?.value;
-    if (adminSession !== "authenticated") {
+    const isAdmin = await verifyAdminToken(request.cookies.get(ADMIN_COOKIE)?.value);
+    if (!isAdmin) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       return NextResponse.redirect(url);
@@ -69,3 +70,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|images|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+

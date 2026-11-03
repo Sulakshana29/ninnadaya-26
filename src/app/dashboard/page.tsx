@@ -43,10 +43,19 @@ interface Contestant {
 
 import { CATEGORIES, LANGUAGES_BY_CATEGORY, AGE_CATEGORIES_BY_CATEGORY } from "@/lib/constants";
 
+// Local date as YYYY-MM-DD (used for DOB validation / max attribute)
+function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 // ── Add Contestant Dialog ────────────────────────────────────────────────
 const contestantSchema = z.object({
-  full_name: z.string().min(2, "Name must be at least 2 characters"),
-  date_of_birth: z.string().min(1, "Date of birth is required"),
+  full_name: z.string().trim().min(2, "Name must be at least 2 characters").max(120),
+  date_of_birth: z.string().min(1, "Date of birth is required").refine(
+    (v) => v <= todayIso() && v > "1990-01-01",
+    "Please enter a valid date of birth"
+  ),
   category: z.string().min(1, "Please select a category"),
   language: z.string().optional(),
   age_category: z.string().optional(),
@@ -77,6 +86,7 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<ContestantFormValues>({
     resolver: zodResolver(contestantSchema),
@@ -89,11 +99,11 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
   const availableLanguages = LANGUAGES_BY_CATEGORY[selectedCategory] ?? [];
   const availableAges = AGE_CATEGORIES_BY_CATEGORY[selectedCategory] ?? [];
 
-  // Reset dependent fields when category changes
+  // Reset dependent fields when category changes so stale values are never saved
   useEffect(() => {
-    // We can't easily reset specific fields on change without overriding others, 
-    // but the schema validation handles rejecting mismatched data.
-  }, [selectedCategory]);
+    setValue("language", "");
+    setValue("age_category", "");
+  }, [selectedCategory, setValue]);
 
   const onSubmit = async (data: ContestantFormValues) => {
     const ageCategoryToSave = needsAge && data.age_category ? data.age_category : "Open";
@@ -151,7 +161,7 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
         full_name: data.full_name,
         date_of_birth: data.date_of_birth,
         category: data.category,
-        language: data.language || null,
+        language: languageToSave,
         age_group: ageCategoryToSave,
       })
       .select()
@@ -208,6 +218,7 @@ function AddContestantDialog({ schoolId, onAdd, contestants }: { schoolId: strin
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</Label>
             <Input
               type="date"
+              max={todayIso()}
               {...register("date_of_birth")}
               className={`bg-black/40 border-border focus:border-yellow-500/60 h-11 ${errors.date_of_birth ? "border-red-500" : ""}`}
             />
@@ -388,9 +399,10 @@ export default function DashboardPage() {
         .single();
 
       if (schoolError || !schoolData) {
-        toast.error("Registration incomplete. Missing school data. Please contact support.");
+        // Don't send to /register — the email is already taken there, which would trap the user
+        toast.error("Your account has no school linked to it. Please contact the Organizing Committee.", { duration: 10000 });
         await supabase.auth.signOut();
-        router.push("/register");
+        router.push("/login");
         return;
       }
 
@@ -442,16 +454,17 @@ export default function DashboardPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this contestant? This action cannot be undone.")) return;
-    
+
+    const previous = contestants;
     setContestants(prev => prev.filter(c => c.id !== id));
-    
+
     const supabase = createClient();
     const { error } = await supabase.from("contestants").delete().eq("id", id);
-    
+
     if (error) {
-      toast.error("Failed to delete contestant.");
+      toast.error("Failed to delete contestant: " + error.message);
       // Rollback optimistic update
-      router.refresh();
+      setContestants(previous);
     } else {
       toast.success("Contestant deleted successfully.");
     }
