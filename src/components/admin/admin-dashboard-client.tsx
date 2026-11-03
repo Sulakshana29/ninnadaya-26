@@ -26,7 +26,7 @@ import {
   Users,
   Trophy,
   Sliders,
-  LayoutDashboard,
+  BarChart3,
   Mic,
   Timer,
   Upload,
@@ -35,6 +35,10 @@ import {
   Save,
   Lock,
   Unlock,
+  Mail,
+  Phone,
+  MapPin,
+  X,
 } from "lucide-react";
 import {
   CATEGORIES,
@@ -134,7 +138,8 @@ function EventEditorCard({
         i === idx
           ? {
               ...item,
-              [field]: field === "max" ? Math.max(1, Number(value) || 0) : String(value),
+              [field]:
+                field === "max" ? Math.max(1, Number(value) || 0) : String(value),
             }
           : item
       )
@@ -193,7 +198,6 @@ function EventEditorCard({
 
   return (
     <div className="space-y-6 pt-2 pb-4">
-      {/* Format & Submission Mode */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -244,18 +248,25 @@ function EventEditorCard({
             className="w-full h-10 px-3 bg-black/40 border border-white/10 rounded-lg text-sm text-foreground focus:border-yellow-500/60 focus:outline-none disabled:opacity-40"
           >
             <option value="none">No Upload Needed (Live Stage)</option>
-            <option value="file">Direct File Upload Only (Images / PDF / ZIP &lt;50MB)</option>
-            <option value="link">External Video / Drive Link Only (YouTube / Google Drive)</option>
-            <option value="both">Both Direct File Upload OR Video/Drive Link</option>
+            <option value="file">
+              Direct File Upload Only (Images / PDF / ZIP &lt;50MB)
+            </option>
+            <option value="link">
+              External Video / Drive Link Only (YouTube / Google Drive)
+            </option>
+            <option value="both">
+              Both Direct File Upload OR Video/Drive Link
+            </option>
           </select>
         </div>
       </div>
 
-      {/* Time Window & Brief (for Timed / Submission or Live Script) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {format === "timed" ? "Task Unlock / Start Time" : "Window Opens At (Optional)"}
+            {format === "timed"
+              ? "Task Unlock / Start Time"
+              : "Window Opens At (Optional)"}
           </Label>
           <Input
             type="datetime-local"
@@ -266,7 +277,9 @@ function EventEditorCard({
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {format === "timed" ? "Hard Stop / Timer End" : "Submission Deadline (Optional)"}
+            {format === "timed"
+              ? "Hard Stop / Timer End"
+              : "Submission Deadline (Optional)"}
           </Label>
           <Input
             type="datetime-local"
@@ -304,12 +317,12 @@ function EventEditorCard({
             className="bg-black/40 border-white/10 h-10"
           />
           <p className="text-[11px] text-muted-foreground">
-            For Editing, Dubbing, or Graphic Design: link to the raw assets pack. Hidden until the timer starts.
+            For Editing, Dubbing, or Graphic Design: link to the raw assets pack.
+            Hidden until the timer starts.
           </p>
         </div>
       </div>
 
-      {/* Judging Rubric */}
       <div className="bg-black/30 rounded-xl p-4 border border-white/5 space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -318,7 +331,9 @@ function EventEditorCard({
             </h4>
             <p className="text-xs text-muted-foreground">
               Total Max Score:{" "}
-              <span className="font-bold text-emerald-400">{totalMaxScore} pts</span>
+              <span className="font-bold text-emerald-400">
+                {totalMaxScore} pts
+              </span>
             </p>
           </div>
           <Button
@@ -380,6 +395,8 @@ function EventEditorCard({
   );
 }
 
+type AdminTab = "contestants" | "schools" | "categories" | "events";
+
 export function AdminDashboardClient({
   schools,
   contestants,
@@ -391,12 +408,22 @@ export function AdminDashboardClient({
   initialEvents?: EventCategoryConfig[];
   initialSettings?: AppSettings;
 }) {
-  const [activeTab, setActiveTab] = useState<"overview" | "events">("overview");
+  const [activeTab, setActiveTab] = useState<AdminTab>("contestants");
+
+  // Contestants filters & sorting
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+  const [languageFilter, setLanguageFilter] = useState<string>("ALL");
+  const [ageFilter, setAgeFilter] = useState<string>("ALL");
+  const [schoolFilter, setSchoolFilter] = useState<string>("ALL");
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "asc" | "desc";
   } | null>(null);
+
+  // Schools filters
+  const [schoolSearch, setSchoolSearch] = useState("");
+  const [invitationOnly, setInvitationOnly] = useState(false);
 
   const [settings, setSettings] = useState<AppSettings>(
     initialSettings || {
@@ -410,10 +437,17 @@ export function AdminDashboardClient({
   );
   const [savingSettings, setSavingSettings] = useState(false);
 
-  // Merge DB event rows with CATEGORIES fallback so it works even before 002 SQL is run
   const [events, setEvents] = useState<EventCategoryConfig[]>(() => {
     const byName = new Map(initialEvents.map((e) => [e.name, e]));
-    return CATEGORIES.map((name) => byName.get(name) || { name, event_format: "live", submission_mode: "none", rubric: DEFAULT_RUBRIC });
+    return CATEGORIES.map(
+      (name) =>
+        byName.get(name) || {
+          name,
+          event_format: "live",
+          submission_mode: "none",
+          rubric: DEFAULT_RUBRIC,
+        }
+    );
   });
 
   const handleToggleRegistration = async () => {
@@ -434,25 +468,48 @@ export function AdminDashboardClient({
           : "Registration is now CLOSED. Coordinators can no longer add/remove contestants."
       );
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Could not update setting");
+      toast.error(
+        err instanceof Error ? err.message : "Could not update setting"
+      );
     } finally {
       setSavingSettings(false);
     }
   };
 
-  // ── Capacity Tracker ──
+  // ── Counts & Aggregations ──
   const categoryCounts = contestants.reduce((acc, curr) => {
     acc[curr.category] = (acc[curr.category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  // ── Search & Sort Logic ──
+  const contestantsPerSchool = contestants.reduce((acc, curr) => {
+    const sId = curr.school_id;
+    if (sId) acc[sId] = (acc[sId] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const invitationCount = schools.filter((s) => s.requires_invitation).length;
+
+  // ── Contestants Filtering & Sorting ──
   const filteredContestants = contestants.filter((c) => {
-    const q = search.toLowerCase();
-    const nameMatch = c.full_name?.toLowerCase().includes(q);
-    const schoolMatch = c.schools?.school_name?.toLowerCase().includes(q);
-    const codeMatch = c.entry_code?.toLowerCase().includes(q);
-    return nameMatch || schoolMatch || codeMatch;
+    const q = search.trim().toLowerCase();
+    if (q) {
+      const nameMatch = c.full_name?.toLowerCase().includes(q);
+      const schoolMatch = c.schools?.school_name?.toLowerCase().includes(q);
+      const codeMatch = c.entry_code?.toLowerCase().includes(q);
+      if (!nameMatch && !schoolMatch && !codeMatch) return false;
+    }
+    if (categoryFilter !== "ALL" && c.category !== categoryFilter) return false;
+    if (languageFilter !== "ALL") {
+      if (languageFilter === "NONE" && c.language) return false;
+      if (languageFilter !== "NONE" && c.language !== languageFilter)
+        return false;
+    }
+    if (ageFilter !== "ALL" && (c.age_group || "Open") !== ageFilter)
+      return false;
+    if (schoolFilter !== "ALL" && c.schools?.school_name !== schoolFilter)
+      return false;
+    return true;
   });
 
   const sortedContestants = [...filteredContestants].sort((a, b) => {
@@ -473,55 +530,122 @@ export function AdminDashboardClient({
 
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "asc"
+    ) {
       direction = "desc";
     }
     setSortConfig({ key, direction });
   };
 
-  return (
-    <>
-      {/* ── Top Control Bar: Tabs + Registration Status Switch ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 glass-card p-4 rounded-2xl border border-white/10">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("overview")}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "overview"
-                ? "bg-yellow-500 text-black shadow-md shadow-yellow-500/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            <LayoutDashboard size={16} /> Overview & Registrations
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("events")}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              activeTab === "events"
-                ? "bg-yellow-500 text-black shadow-md shadow-yellow-500/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-            }`}
-          >
-            <Sliders size={16} /> Event & Rubric Manager
-          </button>
-        </div>
+  const hasActiveFilters =
+    search !== "" ||
+    categoryFilter !== "ALL" ||
+    languageFilter !== "ALL" ||
+    ageFilter !== "ALL" ||
+    schoolFilter !== "ALL";
 
-        <div className="flex items-center justify-between md:justify-end gap-3 border-t md:border-t-0 pt-3 md:pt-0 border-white/10">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground uppercase tracking-wider font-bold">
-              Registration:
-            </span>
-            {settings.registration_open ? (
-              <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                OPEN
-              </Badge>
-            ) : (
-              <Badge className="bg-red-500/20 text-red-400 border border-red-500/40">
-                LOCKED
-              </Badge>
-            )}
+  const clearFilters = () => {
+    setSearch("");
+    setCategoryFilter("ALL");
+    setLanguageFilter("ALL");
+    setAgeFilter("ALL");
+    setSchoolFilter("ALL");
+  };
+
+  // ── Schools Filtering ──
+  const filteredSchools = schools.filter((s) => {
+    if (invitationOnly && !s.requires_invitation) return false;
+    const q = schoolSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      s.school_name?.toLowerCase().includes(q) ||
+      s.coordinator_name?.toLowerCase().includes(q) ||
+      s.coordinator_email?.toLowerCase().includes(q) ||
+      s.teacher_name?.toLowerCase().includes(q) ||
+      s.school_address?.toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* ── KPI Summary Strip ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <button
+          type="button"
+          onClick={() => setActiveTab("contestants")}
+          className="glass-card p-5 rounded-2xl border border-white/10 hover:border-emerald-500/40 transition-all text-left flex items-center gap-4"
+        >
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+              Contestants
+            </p>
+            <p className="text-2xl font-black text-foreground">
+              {contestants.length}
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("schools")}
+          className="glass-card p-5 rounded-2xl border border-white/10 hover:border-blue-500/40 transition-all text-left flex items-center gap-4"
+        >
+          <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+            <School size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+              Registered Schools
+            </p>
+            <p className="text-2xl font-black text-foreground">
+              {schools.length}
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("categories")}
+          className="glass-card p-5 rounded-2xl border border-white/10 hover:border-purple-500/40 transition-all text-left flex items-center gap-4"
+        >
+          <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+            <Trophy size={20} />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+              Active Categories
+            </p>
+            <p className="text-2xl font-black text-foreground">
+              {Object.keys(categoryCounts).length}{" "}
+              <span className="text-xs font-normal text-muted-foreground">
+                / {CATEGORIES.length}
+              </span>
+            </p>
+          </div>
+        </button>
+
+        <div className="glass-card p-5 rounded-2xl border border-white/10 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">
+              Portal Registration
+            </p>
+            <div className="flex items-center gap-2">
+              {settings.registration_open ? (
+                <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs">
+                  OPEN
+                </Badge>
+              ) : (
+                <Badge className="bg-red-500/20 text-red-400 border border-red-500/40 text-xs">
+                  LOCKED
+                </Badge>
+              )}
+            </div>
           </div>
           <Button
             type="button"
@@ -529,7 +653,7 @@ export function AdminDashboardClient({
             variant="outline"
             disabled={savingSettings}
             onClick={handleToggleRegistration}
-            className={`text-xs font-bold border ${
+            className={`text-xs font-bold border shrink-0 ${
               settings.registration_open
                 ? "border-red-500/30 text-red-400 hover:bg-red-500/10"
                 : "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
@@ -537,34 +661,562 @@ export function AdminDashboardClient({
           >
             {settings.registration_open ? (
               <>
-                <Lock size={13} className="mr-1.5" /> Close Registration
+                <Lock size={13} className="mr-1.5" /> Lock
               </>
             ) : (
               <>
-                <Unlock size={13} className="mr-1.5" /> Re-open Registration
+                <Unlock size={13} className="mr-1.5" /> Unlock
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {activeTab === "events" ? (
-        <div className="glass-card rounded-2xl overflow-hidden border-t border-white/5 mb-8">
+      {/* ── Navigation Bar ── */}
+      <div className="flex flex-wrap items-center gap-2 glass-card p-2 rounded-2xl border border-white/10">
+        {[
+          {
+            id: "contestants",
+            label: "Contestants",
+            count: contestants.length,
+            icon: <Users size={15} />,
+          },
+          {
+            id: "schools",
+            label: "Registered Schools",
+            count: schools.length,
+            icon: <School size={15} />,
+          },
+          {
+            id: "categories",
+            label: "Category Breakdown",
+            count: CATEGORIES.length,
+            icon: <BarChart3 size={15} />,
+          },
+          {
+            id: "events",
+            label: "Event & Rubric Manager",
+            count: null,
+            icon: <Sliders size={15} />,
+          },
+        ].map((tab) => {
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as AdminTab)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                active
+                  ? "bg-yellow-500 text-black shadow-md shadow-yellow-500/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              }`}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+              {tab.count !== null && (
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-extrabold ${
+                    active
+                      ? "bg-black/20 text-black"
+                      : "bg-white/10 text-muted-foreground"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── TAB 1: CONTESTANTS (Full-Width Table + Multi-Filter Bar) ── */}
+      {activeTab === "contestants" && (
+        <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
+          {/* Header & Filters */}
+          <div className="p-6 border-b border-border/50 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h2 className="font-black text-xl text-foreground">
+                  Contestants Directory
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Showing{" "}
+                  <span className="text-foreground font-bold">
+                    {sortedContestants.length}
+                  </span>{" "}
+                  of {contestants.length} registered contestants
+                </p>
+              </div>
+              {hasActiveFilters && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="border-white/10 bg-white/5 hover:bg-white/10 text-xs self-start sm:self-auto"
+                >
+                  <X size={13} className="mr-1" /> Clear Filters
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="relative lg:col-span-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
+                <Input
+                  placeholder="Search Entry Code, student name, or school..."
+                  className="pl-9 bg-black/40 border-white/10 focus:border-yellow-500/50 h-10"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="h-10 px-3 bg-black/40 border border-white/10 rounded-lg text-sm text-foreground focus:border-yellow-500/50 focus:outline-none"
+              >
+                <option value="ALL">All Categories</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c} ({categoryCounts[c] || 0})
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={languageFilter}
+                onChange={(e) => setLanguageFilter(e.target.value)}
+                className="h-10 px-3 bg-black/40 border border-white/10 rounded-lg text-sm text-foreground focus:border-yellow-500/50 focus:outline-none"
+              >
+                <option value="ALL">All Languages</option>
+                <option value="Sinhala">Sinhala</option>
+                <option value="English">English</option>
+                <option value="Tamil">Tamil</option>
+                <option value="NONE">No Language (Open)</option>
+              </select>
+
+              <select
+                value={ageFilter}
+                onChange={(e) => setAgeFilter(e.target.value)}
+                className="h-10 px-3 bg-black/40 border border-white/10 rounded-lg text-sm text-foreground focus:border-yellow-500/50 focus:outline-none"
+              >
+                <option value="ALL">All Age Groups</option>
+                <option value="Junior">Junior</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Senior">Senior</option>
+                <option value="Open">Open</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Full-width aligned table */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-black/30">
+                <TableRow className="border-border/50 hover:bg-transparent">
+                  <TableHead
+                    className="w-36 font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("entry_code")}
+                  >
+                    Entry Code <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                  <TableHead
+                    className="font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("full_name")}
+                  >
+                    Student Name <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                  <TableHead
+                    className="font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("school_name")}
+                  >
+                    School <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                  <TableHead
+                    className="font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("category")}
+                  >
+                    Category <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                  <TableHead
+                    className="w-28 font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("language")}
+                  >
+                    Language <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                  <TableHead
+                    className="w-32 font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("age_group")}
+                  >
+                    Age Group <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                  <TableHead
+                    className="w-32 font-bold text-xs uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
+                    onClick={() => handleSort("date_of_birth")}
+                  >
+                    DOB <ArrowUpDown className="inline ml-1 size-3" />
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedContestants.length === 0 ? (
+                  <TableRow className="border-border/50 hover:bg-transparent">
+                    <TableCell
+                      colSpan={7}
+                      className="h-36 text-center text-muted-foreground"
+                    >
+                      No contestants match your current filters.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sortedContestants.map((c: any) => (
+                    <TableRow
+                      key={c.id}
+                      className="border-border/40 hover:bg-white/5 transition-colors"
+                    >
+                      <TableCell className="whitespace-nowrap">
+                        <span className="font-mono text-xs font-bold px-2.5 py-1 rounded bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">
+                          {c.entry_code || "—"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-semibold text-foreground whitespace-nowrap">
+                        {c.full_name}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSchoolFilter(
+                              schoolFilter === c.schools?.school_name
+                                ? "ALL"
+                                : c.schools?.school_name || "ALL"
+                            )
+                          }
+                          className="hover:text-yellow-400 transition-colors text-left"
+                          title="Click to filter by this school"
+                        >
+                          {c.schools?.school_name || "Unknown"}
+                        </button>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge
+                          variant="outline"
+                          className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-medium"
+                        >
+                          {c.category}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap">
+                        {c.language ?? (
+                          <span className="text-muted-foreground/30">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge
+                          variant="outline"
+                          className="border-white/15 bg-white/5 text-foreground text-xs"
+                        >
+                          {c.age_group || "Open"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-xs whitespace-nowrap font-mono">
+                        {c.date_of_birth}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 2: REGISTERED SCHOOLS (Full-Width Aligned Directory) ── */}
+      {activeTab === "schools" && (
+        <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
+          <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="font-black text-xl text-foreground">
+                Registered Schools Directory
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {filteredSchools.length} of {schools.length} schools •{" "}
+                <span className="text-yellow-400 font-semibold">
+                  {invitationCount} requested printed invitation
+                </span>
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
+                <Input
+                  placeholder="Search school, coordinator, teacher..."
+                  className="pl-9 bg-black/40 border-white/10 focus:border-yellow-500/50 h-10"
+                  value={schoolSearch}
+                  onChange={(e) => setSchoolSearch(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setInvitationOnly((v) => !v)}
+                className={`h-10 px-3.5 rounded-lg border text-xs font-bold transition-all ${
+                  invitationOnly
+                    ? "border-yellow-500/60 bg-yellow-500/15 text-yellow-400"
+                    : "border-white/10 bg-black/40 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Needs Invitation ({invitationCount})
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-black/30">
+                <TableRow className="border-border/50 hover:bg-transparent">
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                    School &amp; Address
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                    Coordinator
+                  </TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                    Teacher-in-Charge
+                  </TableHead>
+                  <TableHead className="w-32 text-center font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                    Entries
+                  </TableHead>
+                  <TableHead className="w-36 text-center font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                    Invitation
+                  </TableHead>
+                  <TableHead className="w-28 text-right font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                    Registered
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSchools.length === 0 ? (
+                  <TableRow className="border-border/50 hover:bg-transparent">
+                    <TableCell
+                      colSpan={6}
+                      className="h-36 text-center text-muted-foreground"
+                    >
+                      No schools found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredSchools.map((s: any) => {
+                    const entryCount = contestantsPerSchool[s.id] || 0;
+                    return (
+                      <TableRow
+                        key={s.id}
+                        className="border-border/40 hover:bg-white/5 transition-colors align-top"
+                      >
+                        <TableCell className="py-4">
+                          <p className="font-bold text-foreground text-sm">
+                            {s.school_name}
+                          </p>
+                          {s.school_address && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                              <MapPin size={12} className="shrink-0" />
+                              <span>{s.school_address}</span>
+                            </p>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="py-4 whitespace-nowrap">
+                          <p className="font-semibold text-sm text-foreground">
+                            {s.coordinator_name}
+                          </p>
+                          <div className="flex flex-col gap-0.5 mt-1 text-xs text-muted-foreground">
+                            {s.coordinator_phone && (
+                              <a
+                                href={`tel:${s.coordinator_phone}`}
+                                className="inline-flex items-center gap-1.5 hover:text-yellow-400"
+                              >
+                                <Phone size={11} /> {s.coordinator_phone}
+                              </a>
+                            )}
+                            {s.coordinator_email && (
+                              <a
+                                href={`mailto:${s.coordinator_email}`}
+                                className="inline-flex items-center gap-1.5 hover:text-yellow-400"
+                              >
+                                <Mail size={11} /> {s.coordinator_email}
+                              </a>
+                            )}
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="py-4 whitespace-nowrap">
+                          <p className="font-semibold text-sm text-foreground">
+                            {s.teacher_name || "—"}
+                          </p>
+                          {s.teacher_phone && (
+                            <a
+                              href={`tel:${s.teacher_phone}`}
+                              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-yellow-400 mt-1"
+                            >
+                              <Phone size={11} /> {s.teacher_phone}
+                            </a>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="py-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSchoolFilter(s.school_name);
+                              setActiveTab("contestants");
+                            }}
+                            className="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors"
+                            title="View this school's contestants"
+                          >
+                            {entryCount} students
+                          </button>
+                        </TableCell>
+
+                        <TableCell className="py-4 text-center">
+                          {s.requires_invitation ? (
+                            <Badge
+                              variant="outline"
+                              className="border-yellow-500/40 text-yellow-400 bg-yellow-500/10 text-xs"
+                            >
+                              Printed Copy
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/40">
+                              Not Needed
+                            </span>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="py-4 text-right text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(s.created_at).toLocaleDateString("en-GB")}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 3: CATEGORY BREAKDOWN ── */}
+      {activeTab === "categories" && (
+        <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
           <div className="p-6 border-b border-border/50">
-            <h2 className="font-black text-xl">Competition Event & Rubric Manager</h2>
+            <h2 className="font-black text-xl">Category &amp; Sub-Category Breakdown</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Configure how each category runs (Live Stage, Timed Task, or Pre-Submission), set countdown timers & surprise prompts, and customize judging rubrics.
+              Click any sub-category card to jump directly to those contestants
+            </p>
+          </div>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {CATEGORIES.map((category) => {
+              const langs = LANGUAGES_BY_CATEGORY[category] || [null];
+              const ages = AGE_CATEGORIES_BY_CATEGORY[category] || ["Open"];
+              const totalInCategory = categoryCounts[category] || 0;
+
+              return (
+                <div
+                  key={category}
+                  className="bg-black/30 rounded-2xl border border-white/10 p-5 flex flex-col justify-between space-y-4"
+                >
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                    <h3 className="font-black text-base text-foreground">
+                      {category}
+                    </h3>
+                    <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                      {totalInCategory} total
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-3">
+                    {langs.map((lang, index) => (
+                      <div key={lang || `all-${index}`} className="space-y-2">
+                        {lang && (
+                          <p className="text-[11px] font-bold text-yellow-400 uppercase tracking-widest">
+                            {lang}
+                          </p>
+                        )}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {ages.map((age) => {
+                            const count = contestants.filter((c) => {
+                              if (c.category !== category) return false;
+                              if (lang && c.language !== lang) return false;
+                              if (!lang && c.language) return false;
+                              const cAge = c.age_group || "Open";
+                              return cAge === age;
+                            }).length;
+
+                            return (
+                              <button
+                                key={age}
+                                type="button"
+                                onClick={() => {
+                                  setCategoryFilter(category);
+                                  setLanguageFilter(lang || "NONE");
+                                  setAgeFilter(age);
+                                  setActiveTab("contestants");
+                                }}
+                                className="bg-black/50 hover:bg-white/5 p-3 rounded-xl border border-white/5 hover:border-yellow-500/40 flex items-center justify-between transition-all text-left"
+                              >
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {age}
+                                </span>
+                                <span className="text-lg font-black text-emerald-400">
+                                  {count}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 4: EVENT & RUBRIC MANAGER ── */}
+      {activeTab === "events" && (
+        <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
+          <div className="p-6 border-b border-border/50">
+            <h2 className="font-black text-xl">
+              Competition Event &amp; Rubric Manager
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Configure how each category runs (Live Stage, Timed Task, or
+              Pre-Submission), set countdown timers &amp; surprise prompts, and
+              customize judging rubrics.
             </p>
           </div>
           <div className="p-6">
-            <Accordion className="w-full space-y-4">
+            <Accordion className="w-full space-y-3">
               {events.map((ev) => {
                 const formatBadge =
                   ev.event_format === "timed"
-                    ? { label: "Timed Task", cls: "border-amber-500/30 text-amber-400 bg-amber-500/10" }
+                    ? {
+                        label: "Timed Task",
+                        cls: "border-amber-500/30 text-amber-400 bg-amber-500/10",
+                      }
                     : ev.event_format === "submission"
-                    ? { label: "Submission", cls: "border-blue-500/30 text-blue-400 bg-blue-500/10" }
-                    : { label: "Live Stage", cls: "border-emerald-500/30 text-emerald-400 bg-emerald-500/10" };
+                    ? {
+                        label: "Submission",
+                        cls: "border-blue-500/30 text-blue-400 bg-blue-500/10",
+                      }
+                    : {
+                        label: "Live Stage",
+                        cls: "border-emerald-500/30 text-emerald-400 bg-emerald-500/10",
+                      };
 
                 return (
                   <AccordionItem
@@ -580,9 +1232,14 @@ export function AdminDashboardClient({
                               {ev.code_prefix}
                             </span>
                           )}
-                          <h3 className="font-bold text-lg text-foreground">{ev.name}</h3>
+                          <h3 className="font-bold text-lg text-foreground">
+                            {ev.name}
+                          </h3>
                         </div>
-                        <Badge variant="outline" className={`text-xs ${formatBadge.cls}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${formatBadge.cls}`}
+                        >
                           {formatBadge.label}
                         </Badge>
                       </div>
@@ -592,7 +1249,9 @@ export function AdminDashboardClient({
                         event={ev}
                         onSaved={(updated) =>
                           setEvents((prev) =>
-                            prev.map((item) => (item.name === updated.name ? updated : item))
+                            prev.map((item) =>
+                              item.name === updated.name ? updated : item
+                            )
                           )
                         }
                       />
@@ -603,259 +1262,7 @@ export function AdminDashboardClient({
             </Accordion>
           </div>
         </div>
-      ) : (
-        <>
-          {/* ── Stats Row ── */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="glass-card p-6 rounded-2xl border-t border-white/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                <School size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
-                  Total Schools
-                </p>
-                <p className="text-3xl font-black">{schools.length}</p>
-              </div>
-            </div>
-            <div className="glass-card p-6 rounded-2xl border-t border-white/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center text-green-400">
-                <Users size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
-                  Total Contestants
-                </p>
-                <p className="text-3xl font-black">{contestants.length}</p>
-              </div>
-            </div>
-            <div className="glass-card p-6 rounded-2xl border-t border-white/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400">
-                <Trophy size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">
-                  Active Categories
-                </p>
-                <p className="text-3xl font-black">{Object.keys(categoryCounts).length}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Registration Counter ── */}
-          <div className="glass-card rounded-2xl overflow-hidden border-t border-white/5 mb-8">
-            <div className="p-6 border-b border-border/50">
-              <h2 className="font-black text-xl">Registration Stats</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Live count of registrations across all specific sub-categories (Language & Age)
-              </p>
-            </div>
-            <div className="p-6">
-              <Accordion className="w-full space-y-4">
-                {CATEGORIES.map((category) => {
-                  const langs = LANGUAGES_BY_CATEGORY[category] || [null];
-                  const ages = AGE_CATEGORIES_BY_CATEGORY[category] || ["Open"];
-
-                  return (
-                    <AccordionItem
-                      key={category}
-                      value={category}
-                      className="bg-black/20 rounded-xl border border-white/5 px-4 overflow-hidden border-b-0"
-                    >
-                      <AccordionTrigger className="hover:no-underline py-4">
-                        <div className="flex items-center justify-between w-full pr-4">
-                          <h3 className="font-bold text-lg text-foreground">{category}</h3>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="pt-2 pb-6 space-y-6">
-                        {langs.map((lang, index) => (
-                          <div key={lang || `all-${index}`} className="space-y-4">
-                            {lang && (
-                              <h4 className="text-sm font-bold text-yellow-400 uppercase tracking-widest border-b border-white/5 pb-2">
-                                {lang}
-                              </h4>
-                            )}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {ages.map((age) => {
-                                const count = contestants.filter((c) => {
-                                  if (c.category !== category) return false;
-                                  if (lang && c.language !== lang) return false;
-                                  if (!lang && c.language) return false;
-                                  const cAge = c.age_group || "Open";
-                                  if (cAge !== age) return false;
-                                  return true;
-                                }).length;
-
-                                return (
-                                  <div
-                                    key={age}
-                                    className="bg-black/40 p-4 rounded-xl border border-white/5 flex items-center justify-between"
-                                  >
-                                    <h5 className="font-semibold text-sm text-foreground">{age}</h5>
-                                    <div className="text-right">
-                                      <span className="text-2xl font-black text-emerald-400">
-                                        {count}
-                                      </span>
-                                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest block -mt-1">
-                                        Registered
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </AccordionContent>
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
-            </div>
-          </div>
-
-          {/* ── Tables Grid ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Contestants Table */}
-            <div className="lg:col-span-2 glass-card rounded-2xl overflow-hidden border-t border-white/5">
-              <div className="p-6 border-b border-border/50 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                <div>
-                  <h2 className="font-black text-xl">All Contestants</h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Search by student name, school, or anonymous Entry Code
-                  </p>
-                </div>
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
-                  <Input
-                    placeholder="Search code, name, school..."
-                    className="pl-9 bg-black/40 border-white/10 focus:border-yellow-500/50"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-black/20">
-                    <TableRow className="border-border/50 hover:bg-transparent">
-                      <TableHead
-                        className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
-                        onClick={() => handleSort("entry_code")}
-                      >
-                        Code <ArrowUpDown className="inline ml-1 size-3" />
-                      </TableHead>
-                      <TableHead
-                        className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
-                        onClick={() => handleSort("full_name")}
-                      >
-                        Name <ArrowUpDown className="inline ml-1 size-3" />
-                      </TableHead>
-                      <TableHead
-                        className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
-                        onClick={() => handleSort("school_name")}
-                      >
-                        School <ArrowUpDown className="inline ml-1 size-3" />
-                      </TableHead>
-                      <TableHead
-                        className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
-                        onClick={() => handleSort("category")}
-                      >
-                        Category <ArrowUpDown className="inline ml-1 size-3" />
-                      </TableHead>
-                      <TableHead
-                        className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
-                        onClick={() => handleSort("language")}
-                      >
-                        Language <ArrowUpDown className="inline ml-1 size-3" />
-                      </TableHead>
-                      <TableHead
-                        className="font-bold text-muted-foreground cursor-pointer hover:text-yellow-400 transition-colors"
-                        onClick={() => handleSort("age_group")}
-                      >
-                        Age <ArrowUpDown className="inline ml-1 size-3" />
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedContestants.length === 0 ? (
-                      <TableRow className="border-border/50 hover:bg-transparent">
-                        <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                          No contestants found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      sortedContestants.map((c: any) => (
-                        <TableRow
-                          key={c.id}
-                          className="border-border/50 hover:bg-white/5 transition-colors"
-                        >
-                          <TableCell className="whitespace-nowrap">
-                            <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                              {c.entry_code || "—"}
-                            </span>
-                          </TableCell>
-                          <TableCell className="font-medium whitespace-nowrap">
-                            {c.full_name}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap">
-                            {c.schools?.school_name}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <Badge
-                              variant="outline"
-                              className="border-white/10 bg-white/5 text-foreground"
-                            >
-                              {c.category}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap">
-                            {c.language ?? <span className="text-muted-foreground/30">—</span>}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground whitespace-nowrap">
-                            {c.age_group}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-
-            {/* Schools Summary */}
-            <div className="glass-card rounded-2xl overflow-hidden border-t border-white/5 h-fit">
-              <div className="p-6 border-b border-border/50">
-                <h2 className="font-black text-xl">Registered Schools</h2>
-              </div>
-              <div className="divide-y divide-border/50 max-h-[600px] overflow-y-auto">
-                {schools.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    No schools registered.
-                  </div>
-                ) : (
-                  schools.map((s: any) => (
-                    <div key={s.id} className="p-4 hover:bg-white/5 transition-colors">
-                      <h3 className="font-bold text-sm mb-1">{s.school_name}</h3>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {s.coordinator_name} ({s.coordinator_phone})
-                      </p>
-                      {s.requires_invitation && (
-                        <Badge
-                          variant="outline"
-                          className="border-yellow-500/30 text-yellow-500 bg-yellow-500/10 text-[10px] px-1.5"
-                        >
-                          Needs Invitation
-                        </Badge>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </>
       )}
-    </>
+    </div>
   );
 }
